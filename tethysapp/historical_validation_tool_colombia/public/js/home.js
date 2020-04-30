@@ -340,6 +340,236 @@ function get_hydrographs (watershed, subbasin, streamcomid, stationcode, station
     });
 };
 
+function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, stationname) {
+	$('#hydro_stats-loading').removeClass('hidden');
+  console.log("entering teh hydro_stats function");
+	m_downloaded_historical_streamflow = true;
+    $.ajax({
+        url: 'get-hydro-stats',
+        type: 'GET',
+        data: {
+            'watershed': watershed,
+            'subbasin': subbasin,
+            'streamcomid': streamcomid,
+            'stationcode': stationcode,
+            'stationname': stationname
+        },
+        error: function() {
+          console.log("error");
+            $('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the data</strong></p>');
+            $('#info').removeClass('hidden');
+
+            setTimeout(function () {
+                $('#info').addClass('hidden')
+            }, 5000);
+        },
+        success: function (data) {
+            if (!data.error) {
+              console.log(data);
+//                 $('#dailyAverages-loading').addClass('hidden');
+//                 $('#dates').removeClass('hidden');
+// //                $('#obsdates').removeClass('hidden');
+//                 $loading.addClass('hidden');
+//                 $('#dailyAverages-chart').removeClass('hidden');
+//                 $('#dailyAverages-chart').html(data);
+//
+//                 //resize main graph
+//                 Plotly.Plots.resize($("#dailyAverages-chart .js-plotly-plot")[0]);
+//                 Plotly.relayout($("#dailyAverages-chart .js-plotly-plot")[0], {
+//                 	'xaxis.autorange': true,
+//                 	'yaxis.autorange': true
+//                 });
+                $('#hydro_stats-loading').addClass('hidden');
+                $('#dates').removeClass('hidden');
+//                $('#obsdates').removeClass('hidden');
+                $loading.addClass('hidden');
+                $('#hydro_stats-chart').removeClass('hidden');
+                var observed_trace_daily = {
+                  x: data['gizmo_object_daily_average']['data'][0]['x'],
+                  y: data['gizmo_object_daily_average']['data'][0]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_daily_average']['data'][0]['name']
+                };
+                //daily data
+                var simulated_trace_daily = {
+                  x: data['gizmo_object_daily_average']['data'][1]['x'],
+                  y: data['gizmo_object_daily_average']['data'][1]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_daily_average']['data'][1]['name'],
+
+                };
+
+                var simulated_trace_corrected_daily = {
+                  x: data['gizmo_object_daily_average']['data'][2]['x'],
+                  y: data['gizmo_object_daily_average']['data'][2]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_daily_average']['data'][2]['name'],
+
+                };
+                //monthly//
+                var observed_trace_monthly = {
+                  x: data['gizmo_object_monthly_average']['data'][0]['x'],
+                  y: data['gizmo_object_monthly_average']['data'][0]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_monthly_average']['data'][0]['name'],
+
+                };
+
+                var simulated_trace_monthly = {
+                  x: data['gizmo_object_monthly_average']['data'][1]['x'],
+                  y: data['gizmo_object_monthly_average']['data'][1]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_monthly_average']['data'][1]['name'],
+
+                };
+
+                var simulated_trace_corrected_monthly = {
+                  x: data['gizmo_object_monthly_average']['data'][2]['x'],
+                  y: data['gizmo_object_monthly_average']['data'][2]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_monthly_average']['data'][2]['name'],
+
+                };
+                //Scatter plot //
+                var scatter_plot_original = {
+                  x: data['gizmo_object_scatterplot']['data'][0]['x'],
+                  y: data['gizmo_object_scatterplot']['data'][0]['y'],
+                  type: 'scatter',
+                  mode:'markers',
+                  markers:{
+                    color:data['gizmo_object_scatterplot']['data'][0]['marker']['color']
+                  },
+                  name:data['gizmo_object_scatterplot']['data'][0]['name'],
+                };
+                var scatter_plot_corrected = {
+                  x: data['gizmo_object_scatterplot']['data'][1]['x'],
+                  y: data['gizmo_object_scatterplot']['data'][1]['y'],
+                  type: 'scatter',
+                  mode:'markers',
+                  markers:{
+                    color:data['gizmo_object_scatterplot']['data'][1]['marker']['color']
+                  },
+                  name:data['gizmo_object_scatterplot']['data'][1]['name'],
+                };
+                var scatter_plot_45_line = {
+                  x: data['gizmo_object_scatterplot']['data'][2]['x'],
+                  y: data['gizmo_object_scatterplot']['data'][2]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_scatterplot']['data'][2]['name'],
+                };
+                var scatter_plot_original_line = {
+                  x: data['gizmo_object_scatterplot']['data'][3]['x'],
+                  y: data['gizmo_object_scatterplot']['data'][3]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_scatterplot']['data'][3]['name'],
+                };
+                var scatter_plot_corrected_line = {
+                  x: data['gizmo_object_scatterplot']['data'][4]['x'],
+                  y: data['gizmo_object_scatterplot']['data'][4]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_object_scatterplot']['data'][4]['name'],
+                };
+
+                // var data_graphs = [observed_trace_daily, simulated_trace_daily, simulated_trace_corrected_daily,observed_trace_monthly,simulated_trace_monthly,simulated_trace_corrected_monthly];
+                var data_graphs1 = [observed_trace_daily, simulated_trace_daily, simulated_trace_corrected_daily];
+                var data_graphs2 = [observed_trace_monthly,simulated_trace_monthly,simulated_trace_corrected_monthly];
+                var data_graphs3 = [scatter_plot_original,scatter_plot_corrected, scatter_plot_45_line, scatter_plot_original_line,scatter_plot_corrected_line];
+                var data_graphs4 = [scatter_plot_original,scatter_plot_corrected, scatter_plot_45_line];
+                var layout ={
+                  xaxis:{
+                    title:{
+                      text: data['gizmo_object_daily_average']['layout']['xaxis'],
+                    },
+                    autorange: true,
+                  },
+                  yaxis:{
+                    title:{
+                      text: data['gizmo_object_daily_average']['layout']['yaxis'],
+                    },
+                    autorange: true,
+                  },
+
+                  title: data['gizmo_object_daily_average']['layout']['title']
+
+                }
+                var layout2 = {
+                  xaxis:{
+                    title:{
+                      text: data['gizmo_object_monthly_average']['layout']['xaxis'],
+                    },
+                    autorange: true,
+                  },
+                  yaxis:{
+                    title:{
+                      text: data['gizmo_object_monthly_average']['layout']['yaxis'],
+                    },
+                    autorange: true,
+                  },
+                  title: data['gizmo_object_monthly_average']['layout']['title']
+
+                }
+                var layout3 = {
+                  xaxis:{
+                    title:{
+                      text: data['gizmo_object_scatterplot']['layout']['xaxis'],
+                    },
+                    autorange: true,
+                  },
+                  yaxis:{
+                    title:{
+                      text:data['gizmo_object_scatterplot']['layout']['yaxis'],
+                    },
+                    autorange: true,
+                  },
+                  title: data['gizmo_object_scatterplot']['layout']['title']
+
+                }
+                var layout4 = {
+                  xaxis:{
+                    type:'log',
+                    title:{
+                      text: data['gizmo_object_scatterplot']['layout']['xaxis'],
+                    },
+                    autorange: true,
+                  },
+                  yaxis:{
+                    type:'log',
+                    title:{
+                      text:data['gizmo_object_scatterplot']['layout']['yaxis'],
+                    },
+                    autorange: true,
+                  },
+                  title: `${data['gizmo_object_scatterplot']['layout']['title']}(Log Scale)`
+
+                }
+
+                // Plotly.newPlot('hydro_stats-chart', data_graphs, layout);
+                Plotly.newPlot('daily2', data_graphs1, layout);
+                Plotly.newPlot('monthly2', data_graphs2, layout2);
+                Plotly.newPlot('scatterplot2', data_graphs3, layout3);
+                Plotly.newPlot('scatterplotLog2', data_graphs4, layout4);
+
+                //resize main graph
+                // Plotly.Plots.resize($("#hydro_stats-chart .js-plotly-plot")[0]);
+                // Plotly.relayout($("#hydro_stats-chart .js-plotly-plot")[0], {
+                // 	'xaxis.autorange': true,
+                // 	'yaxis.autorange': true
+                // });
+
+           		 }
+               else if (data.error) {
+           		 	$('#info').html('<p class="alert alert-danger" style="text-align: center"><strong>An unknown error occurred while retrieving the Data</strong></p>');
+           		 	$('#info').removeClass('hidden');
+
+           		 	setTimeout(function() {
+           		 		$('#info').addClass('hidden')
+           		 	}, 5000);
+           		 } else {
+           		 	$('#info').html('<p><strong>An unexplainable error occurred.</strong></p>').removeClass('hidden');
+           		 }
+       		}
+    });
+};
 function get_dailyAverages (watershed, subbasin, streamcomid, stationcode, stationname) {
 	$('#dailyAverages-loading').removeClass('hidden');
 	m_downloaded_historical_streamflow = true;
@@ -672,6 +902,7 @@ function map_events() {
 				$('#simulated-chart-Q').addClass('hidden');
 				$('#simulated-bc-chart-Q').addClass('hidden');
 				$('#hydrographs-chart').addClass('hidden');
+				$('#hydro_stats-chart').addClass('hidden');
 				$('#dailyAverages-chart').addClass('hidden');
 				$('#monthlyAverages-chart').addClass('hidden');
 				$('#scatterPlot-chart').addClass('hidden');
@@ -683,6 +914,7 @@ function map_events() {
 				$('#simulated-loading-Q').removeClass('hidden');
 				$('#simulated-bc-loading-Q').removeClass('hidden');
 				$('#hydrographs-loading').removeClass('hidden');
+				$('#hydro_stats-loading').removeClass('hidden');
 				$('#dailyAverages-loading').removeClass('hidden');
 				$('#monthlyAverages-loading').removeClass('hidden');
 				$('#scatterPlot-loading').removeClass('hidden');
@@ -717,6 +949,7 @@ function map_events() {
                         get_simulated_data (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_simulated_bc_data (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_hydrographs (watershed, subbasin, streamcomid, stationcode, stationname);
+                        get_hydro_stats (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_dailyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_monthlyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_scatterPlot (watershed, subbasin, streamcomid, stationcode, stationname);

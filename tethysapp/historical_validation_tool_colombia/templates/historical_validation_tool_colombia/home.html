@@ -5,6 +5,7 @@
 
 {% block import_gizmos %}
     {% import_gizmo_dependency plotly_view %}
+
 {% endblock %}
 
 {% block app_content %}
@@ -47,6 +48,9 @@
             <li role="presentation"><a id="simulatedQ_tab_link" href="#simulatedQ" aria-controls="simulatedQ" role="tab" data-toggle="tab">Simulated Discharge</a></li>
             <li role="presentation"><a id="simulated_bc_Q_tab_link" href="#simulated_bc_Q" aria-controls="simulated_bc_Q" role="tab" data-toggle="tab">Corrected Simulated Discharge</a></li>
             <li role="presentation"><a id="hydrographs_tab_link" href="#hydrographs" aria-controls="hydrographs" role="tab" data-toggle="tab">Hydrographs</a></li>
+
+            <li role="presentation"><a id="hydro_stats_tab_link" href="#hydro_stats" aria-controls="hydro_stats" role="tab" data-toggle="tab">Statistics</a></li>
+
             <li role="presentation"><a id="dailyAverages_tab_link" href="#dailyAverages" aria-controls="dailyAverages" role="tab" data-toggle="tab">Daily Averages</a></li>
             <li role="presentation"><a id="monthlyAverages_tab_link" href="#monthlyAverages" aria-controls="monthlyAverages" role="tab" data-toggle="tab">Monthly Averages</a></li>
             <li role="presentation"><a id="scatterPlot_tab_link" href="#scatterPlot" aria-controls="scatterPlot" role="tab" data-toggle="tab">Scatter Plot</a></li>
@@ -92,6 +96,22 @@
                 </div>
               </div>
             </div>
+
+            <div role="tabpanel" class="tab-pane" id="hydro_stats">
+              <div class="panel panel-default">
+                <div class="panel-body">
+                  <div class="flex-container-row"><img id="hydro_stats-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div id="hydro_stats-chart">
+                    <div id="daily2"></div>
+                    <div id="monthly2"></div>
+                    <div id="scatterplot2"></div>
+                    <div id="scatterplotLog2"></div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div role="tabpanel" class="tab-pane" id="dailyAverages">
               <div class="panel panel-default">
                 <div class="panel-body">

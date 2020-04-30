@@ -55,6 +55,11 @@ class HistoricalValidationToolColombia(TethysAppBase):
                 controller='historical_validation_tool_colombia.controllers.get_dailyAverages'
             ),
             UrlMap(
+                name='get_hydro_stats',
+                url='get-hydro-stats',
+                controller='historical_validation_tool_colombia.controllers.get_hydro_stats'
+            ),
+            UrlMap(
                 name='get_monthlyAverages',
                 url='get-monthlyAverages',
                 controller='historical_validation_tool_colombia.controllers.get_monthlyAverages'
