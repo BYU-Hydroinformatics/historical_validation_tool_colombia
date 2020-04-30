@@ -366,19 +366,7 @@ function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, station
         success: function (data) {
             if (!data.error) {
               console.log(data);
-//                 $('#dailyAverages-loading').addClass('hidden');
-//                 $('#dates').removeClass('hidden');
-// //                $('#obsdates').removeClass('hidden');
-//                 $loading.addClass('hidden');
-//                 $('#dailyAverages-chart').removeClass('hidden');
-//                 $('#dailyAverages-chart').html(data);
-//
-//                 //resize main graph
-//                 Plotly.Plots.resize($("#dailyAverages-chart .js-plotly-plot")[0]);
-//                 Plotly.relayout($("#dailyAverages-chart .js-plotly-plot")[0], {
-//                 	'xaxis.autorange': true,
-//                 	'yaxis.autorange': true
-//                 });
+
                 $('#hydro_stats-loading').addClass('hidden');
                 $('#dates').removeClass('hidden');
 //                $('#obsdates').removeClass('hidden');
@@ -548,13 +536,6 @@ function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, station
                 Plotly.newPlot('monthly2', data_graphs2, layout2);
                 Plotly.newPlot('scatterplot2', data_graphs3, layout3);
                 Plotly.newPlot('scatterplotLog2', data_graphs4, layout4);
-
-                //resize main graph
-                // Plotly.Plots.resize($("#hydro_stats-chart .js-plotly-plot")[0]);
-                // Plotly.relayout($("#hydro_stats-chart .js-plotly-plot")[0], {
-                // 	'xaxis.autorange': true,
-                // 	'yaxis.autorange': true
-                // });
 
            		 }
                else if (data.error) {
@@ -898,16 +879,17 @@ function map_events() {
 
 			if (wms_url) {
 				$("#obsgraph").modal('show');
-				$('#observed-chart-Q').addClass('hidden');
-				$('#simulated-chart-Q').addClass('hidden');
-				$('#simulated-bc-chart-Q').addClass('hidden');
+				// $('#observed-chart-Q').addClass('hidden');
+				// $('#simulated-chart-Q').addClass('hidden');
+				// $('#simulated-bc-chart-Q').addClass('hidden');
+				// $('#hydrographs-chart').addClass('hidden');
 				$('#hydrographs-chart').addClass('hidden');
 				$('#hydro_stats-chart').addClass('hidden');
-				$('#dailyAverages-chart').addClass('hidden');
-				$('#monthlyAverages-chart').addClass('hidden');
-				$('#scatterPlot-chart').addClass('hidden');
-				$('#scatterPlotLogScale-chart').addClass('hidden');
-				$('#volumeAnalysis-chart').addClass('hidden');
+				// $('#dailyAverages-chart').addClass('hidden');
+				// $('#monthlyAverages-chart').addClass('hidden');
+				// $('#scatterPlot-chart').addClass('hidden');
+				// $('#scatterPlotLogScale-chart').addClass('hidden');
+				// $('#volumeAnalysis-chart').addClass('hidden');
 				$('#forecast-chart').addClass('hidden');
 				$('#forecast-bc-chart').addClass('hidden');
 				$('#observed-loading-Q').removeClass('hidden');
@@ -945,15 +927,15 @@ function map_events() {
                         			+ '</h3><h5 id="Station-Code-Tab">Station Code: '
                         			+ stationcode + '</h3><h5 id="COMID-Tab">Station COMID: '
                         			+ streamcomid+ '</h5><h5>Stream: '+ stream);
-                        get_discharge_info (stationcode, stationname);
-                        get_simulated_data (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_simulated_bc_data (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_discharge_info (stationcode, stationname);
+                        // get_simulated_data (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_simulated_bc_data (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_hydrographs (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_hydro_stats (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_dailyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_monthlyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_scatterPlot (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_scatterPlotLogScale (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_dailyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_monthlyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_scatterPlot (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_scatterPlotLogScale (watershed, subbasin, streamcomid, stationcode, stationname);
                         get_volumeAnalysis (watershed, subbasin, streamcomid, stationcode, stationname);
                         createVolumeTable(watershed, subbasin, streamcomid, stationcode, stationname);
                         get_available_dates(watershed, subbasin, streamcomid);
@@ -970,29 +952,29 @@ function map_events() {
 
 
 function resize_graphs() {
-    $("#observedQ_tab_link").click(function() {
-        Plotly.Plots.resize($("#observed-chart-Q .js-plotly-plot")[0]);
-        Plotly.relayout($("#observed-chart-Q .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
-    $("#simulatedQ_tab_link").click(function() {
-    	if (m_downloaded_historical_streamflow) {
-    		Plotly.Plots.resize($("#simulated-chart-Q .js-plotly-plot")[0]);
-    		Plotly.relayout($("#simulated-chart-Q .js-plotly-plot")[0], {
-        		'xaxis.autorange': true,
-        		'yaxis.autorange': true
-        	});
-    	}
-    });
-    $("#simulated_bc_Q_tab_link").click(function() {
-    	Plotly.Plots.resize($("#simulated-bc-chart-Q .js-plotly-plot")[0]);
-    	Plotly.relayout($("#simulated-bc-chart-Q .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
+    // $("#observedQ_tab_link").click(function() {
+    //     Plotly.Plots.resize($("#observed-chart-Q .js-plotly-plot")[0]);
+    //     Plotly.relayout($("#observed-chart-Q .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
+    // $("#simulatedQ_tab_link").click(function() {
+    // 	if (m_downloaded_historical_streamflow) {
+    // 		Plotly.Plots.resize($("#simulated-chart-Q .js-plotly-plot")[0]);
+    // 		Plotly.relayout($("#simulated-chart-Q .js-plotly-plot")[0], {
+    //     		'xaxis.autorange': true,
+    //     		'yaxis.autorange': true
+    //     	});
+    // 	}
+    // });
+    // $("#simulated_bc_Q_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#simulated-bc-chart-Q .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#simulated-bc-chart-Q .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
     $("#hydrographs_tab_link").click(function() {
     	Plotly.Plots.resize($("#hydrographs-chart .js-plotly-plot")[0]);
     	Plotly.relayout($("#hydrographs-chart .js-plotly-plot")[0], {
