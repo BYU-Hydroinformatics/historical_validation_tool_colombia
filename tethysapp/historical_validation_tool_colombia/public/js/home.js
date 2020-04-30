@@ -457,12 +457,37 @@ function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, station
                   type: 'scatter',
                   name:data['gizmo_object_scatterplot']['data'][4]['name'],
                 };
+                // VOLUME ANALYSIS //
+                var volume_analysis_observed = {
+                  x: data['gizmo_volume_analysis']['data'][0]['x'],
+                  y: data['gizmo_volume_analysis']['data'][0]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_volume_analysis']['data'][0]['name'],
+
+                };
+
+                var volume_analysis_simulated= {
+                  x: data['gizmo_volume_analysis']['data'][1]['x'],
+                  y: data['gizmo_volume_analysis']['data'][1]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_volume_analysis']['data'][1]['name'],
+
+                };
+
+                var volume_analysis_simulated_corrected= {
+                  x: data['gizmo_volume_analysis']['data'][2]['x'],
+                  y: data['gizmo_volume_analysis']['data'][2]['y'],
+                  type: 'scatter',
+                  name:data['gizmo_volume_analysis']['data'][2]['name'],
+
+                };
 
                 // var data_graphs = [observed_trace_daily, simulated_trace_daily, simulated_trace_corrected_daily,observed_trace_monthly,simulated_trace_monthly,simulated_trace_corrected_monthly];
                 var data_graphs1 = [observed_trace_daily, simulated_trace_daily, simulated_trace_corrected_daily];
                 var data_graphs2 = [observed_trace_monthly,simulated_trace_monthly,simulated_trace_corrected_monthly];
                 var data_graphs3 = [scatter_plot_original,scatter_plot_corrected, scatter_plot_45_line, scatter_plot_original_line,scatter_plot_corrected_line];
                 var data_graphs4 = [scatter_plot_original,scatter_plot_corrected, scatter_plot_45_line];
+                var data_graphs5 = [volume_analysis_observed,volume_analysis_simulated,volume_analysis_simulated_corrected];
                 var layout ={
                   xaxis:{
                     title:{
@@ -530,12 +555,29 @@ function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, station
                   title: `${data['gizmo_object_scatterplot']['layout']['title']}(Log Scale)`
 
                 }
+                var layout5 = {
+                  xaxis:{
+                    title:{
+                      text: data['gizmo_volume_analysis']['layout']['xaxis'],
+                    },
+                    autorange: true,
+                  },
+                  yaxis:{
+                    title:{
+                      text:data['gizmo_volume_analysis']['layout']['yaxis'],
+                    },
+                    autorange: true,
+                  },
+                  title: `${data['gizmo_volume_analysis']['layout']['title']}`
+
+                }
 
                 // Plotly.newPlot('hydro_stats-chart', data_graphs, layout);
                 Plotly.newPlot('daily2', data_graphs1, layout);
                 Plotly.newPlot('monthly2', data_graphs2, layout2);
                 Plotly.newPlot('scatterplot2', data_graphs3, layout3);
                 Plotly.newPlot('scatterplotLog2', data_graphs4, layout4);
+                Plotly.newPlot('volumeAnaysis2', data_graphs5, layout5);
 
            		 }
                else if (data.error) {
@@ -936,7 +978,7 @@ function map_events() {
                         // get_monthlyAverages (watershed, subbasin, streamcomid, stationcode, stationname);
                         // get_scatterPlot (watershed, subbasin, streamcomid, stationcode, stationname);
                         // get_scatterPlotLogScale (watershed, subbasin, streamcomid, stationcode, stationname);
-                        get_volumeAnalysis (watershed, subbasin, streamcomid, stationcode, stationname);
+                        // get_volumeAnalysis (watershed, subbasin, streamcomid, stationcode, stationname);
                         createVolumeTable(watershed, subbasin, streamcomid, stationcode, stationname);
                         get_available_dates(watershed, subbasin, streamcomid);
                         get_time_series(watershed, subbasin, streamcomid, startdate);
