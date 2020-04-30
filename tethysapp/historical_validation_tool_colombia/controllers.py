@@ -535,13 +535,15 @@ def get_hydro_stats(request):
     chart_obj_MA = get_monthlyAverages2(request)
     # print(chart_obj_MA)
     chart_obj_SP = get_scatterPlot2(request)
+    chart_obj_VA = get_volumeAnalysis2(request)
     ## Monthly Average ##
     ## Scatter Plot ##
 
     new_context={
         'gizmo_object_daily_average': chart_obj_DA,
         'gizmo_object_monthly_average': chart_obj_MA,
-        'gizmo_object_scatterplot': chart_obj_SP
+        'gizmo_object_scatterplot': chart_obj_SP,
+		'gizmo_volume_analysis': chart_obj_VA
     }
     # new_context={
     #     'hola': "holass"
@@ -2314,6 +2316,245 @@ def get_scatterPlotLogScale(request):
 		return JsonResponse({'error': 'No data found for the selected station.'})
 
 
+def get_volumeAnalysis2(request):
+	"""
+    Get observed data from csv files in Hydroshare
+    Get historic simulations from ERA Interim
+    """
+	get_data = request.GET
+
+	try:
+		watershed = get_data['watershed']
+		subbasin = get_data['subbasin']
+		comid = get_data['streamcomid']
+		codEstacion = get_data['stationcode']
+		nomEstacion = get_data['stationname']
+
+		'''Get Simulated Data'''
+
+		# request_params
+		request_params = dict(watershed_name=watershed, subbasin_name=subbasin, reach_id=comid, return_format='csv')
+
+		# Token is for the demo account
+		request_headers = dict(Authorization='Token 1adf07d983552705cd86ac681f3717510b6937f6')
+
+		era_res = requests.get('https://tethys2.byu.edu/apps/streamflow-prediction-tool/api/GetHistoricData/',
+		                       params=request_params, headers=request_headers)
+
+		era_pairs = era_res.content.splitlines()
+		era_pairs.pop(0)
+
+		era_dates = []
+		era_values = []
+
+		for era_pair in era_pairs:
+			era_pair = era_pair.decode('utf-8')
+			era_dates.append(dt.datetime.strptime(era_pair.split(',')[0], '%Y-%m-%d %H:%M:%S'))
+			era_values.append(float(era_pair.split(',')[1]))
+
+		# Removing Negative Values
+		era_values2 = [0 if i < 0 else i for i in era_values]
+		era_values = era_values2
+
+		simulated_df = pd.DataFrame(data=era_values, index=era_dates, columns=['Simulated Streamflow'])
+
+		'''Get Observed Data'''
+
+		url = 'https://www.hydroshare.org/resource/d222676fbd984a81911761ca1ba936bf/data/contents/Discharge_Data/{0}.csv'.format(
+			codEstacion)
+
+		s = requests.get(url, verify=False).content
+
+		df = pd.read_csv(io.StringIO(s.decode('utf-8')), index_col=0)
+		df.index = pd.to_datetime(df.index)
+
+		datesDischarge = df.index.tolist()
+		dataDischarge = df.iloc[:, 0].values
+		dataDischarge.tolist()
+
+		if isinstance(dataDischarge[0], str):
+			dataDischarge = map(float, dataDischarge)
+
+		observed_df = pd.DataFrame(data=dataDischarge, index=datesDischarge, columns=['Observed Streamflow'])
+
+		'''Correct the Bias in Sumulation'''
+
+		years = ['1980', '1981', '1982', '1983', '1984', '1985', '1986', '1987', '1988', '1989', '1990', '1991', '1992',
+		         '1993', '1994', '1995', '1996', '1997', '1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005',
+		         '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014']
+
+		months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+
+		dates = []
+		values = []
+
+		for year in years:
+			data_year = simulated_df[simulated_df.index.year == int(year)]
+
+			for month in months:
+				data_month = data_year[data_year.index.month == int(month)]
+
+				# select a specific month for bias correction example
+				# in this case we will use current month from forecast
+				iniDate = data_month.index[0]
+				monIdx = iniDate.month
+
+				# filter historic data to only be current month
+				monData = simulated_df[simulated_df.index.month.isin([monIdx])]
+				# filter the observations to current month
+				monObs = observed_df[observed_df.index.month.isin([monIdx])]
+
+				# get maximum value to bound histogram
+				obs_tempMax = np.max(monObs.max())
+				sim_tempMax = np.max(monData.max())
+				obs_tempMin = np.min(monObs.min())
+				sim_tempMin = np.min(monData.min())
+
+				obs_maxVal = math.ceil(obs_tempMax)
+				sim_maxVal = math.ceil(sim_tempMax)
+				obs_minVal = math.floor(obs_tempMin)
+				sim_minVal = math.floor(sim_tempMin)
+
+				n_elementos_obs = len(monObs.iloc[:, 0].values)
+				n_elementos_sim = len(monData.iloc[:, 0].values)
+
+				n_marcas_clase_obs = math.ceil(1 + (3.322 * math.log10(n_elementos_obs)))
+				n_marcas_clase_sim = math.ceil(1 + (3.322 * math.log10(n_elementos_sim)))
+
+				# specify the bin width for histogram (in m3/s)
+				step_obs = (obs_maxVal - obs_minVal) / n_marcas_clase_obs
+				step_sim = (sim_maxVal - sim_minVal) / n_marcas_clase_sim
+
+				# specify histogram bins
+				bins_obs = np.arange(-np.min(step_obs), obs_maxVal + 2 * np.min(step_obs), np.min(step_obs))
+				bins_sim = np.arange(-np.min(step_sim), sim_maxVal + 2 * np.min(step_sim), np.min(step_sim))
+
+				if (bins_obs[0] == 0):
+					bins_obs = np.concatenate((-bins_obs[1], bins_obs))
+				elif (bins_obs[0] > 0):
+					bins_obs = np.concatenate((-bins_obs[0], bins_obs))
+
+				if (bins_sim[0] >= 0):
+					bins_sim = np.concatenate((-bins_sim[1], bins_sim))
+				elif (bins_sim[0] > 0):
+					bins_sim = np.concatenate((-bins_sim[0], bins_sim))
+
+				# get the histograms
+				sim_counts, bin_edges_sim = np.histogram(monData, bins=bins_sim)
+				obs_counts, bin_edges_obs = np.histogram(monObs, bins=bins_obs)
+
+				# adjust the bins to be the center
+				bin_edges_sim = bin_edges_sim[1:]
+				bin_edges_obs = bin_edges_obs[1:]
+
+				# normalize the histograms
+				sim_counts = sim_counts.astype(float) / monData.size
+				obs_counts = obs_counts.astype(float) / monObs.size
+
+				# calculate the cdfs
+				simcdf = np.cumsum(sim_counts)
+				obscdf = np.cumsum(obs_counts)
+
+				# interpolated function to convert simulated streamflow to prob
+				f = interpolate.interp1d(bin_edges_sim, simcdf)
+
+				# interpolated function to convert simulated prob to observed streamflow
+				backout = interpolate.interp1d(obscdf, bin_edges_obs)
+
+				date = data_month.index.to_list()
+				value = backout(f(data_month.iloc[:, 0].to_list()))
+				value = value.tolist()
+
+				dates.append(date)
+				values.append(value)
+
+		dates = reduce(lambda x, y: x + y, dates)
+		values = reduce(lambda x, y: x + y, values)
+
+		corrected_df = pd.DataFrame(data=values, index=dates, columns=['Corrected Simulated Streamflow'])
+
+		'''Merge Data'''
+
+		merged_df = hd.merge_data(sim_df=simulated_df, obs_df=observed_df)
+
+		merged_df2 = hd.merge_data(sim_df=corrected_df, obs_df=observed_df)
+
+		'''Plotting Data'''
+
+		sim_array = merged_df.iloc[:, 0].values
+		obs_array = merged_df.iloc[:, 1].values
+		corr_array = merged_df2.iloc[:, 0].values
+
+		sim_volume_dt = sim_array * 0.0864
+		obs_volume_dt = obs_array * 0.0864
+		corr_volume_dt = corr_array * 0.0864
+
+		sim_volume_cum = []
+		obs_volume_cum = []
+		corr_volume_cum = []
+		sum_sim = 0
+		sum_obs = 0
+		sum_corr = 0
+
+		for i in sim_volume_dt:
+			sum_sim = sum_sim + i
+			sim_volume_cum.append(sum_sim)
+
+		for j in obs_volume_dt:
+			sum_obs = sum_obs + j
+			obs_volume_cum.append(sum_obs)
+
+		for k in corr_volume_dt:
+			sum_corr = sum_corr + k
+			corr_volume_cum.append(sum_corr)
+
+		# observed_volume = go.Scatter(x=merged_df.index, y=obs_volume_cum, name='Observed', )
+		# simulated_volume = go.Scatter(x=merged_df.index, y=sim_volume_cum, name='Simulated', )
+		# corrected_volume = go.Scatter(x=merged_df2.index, y=corr_volume_cum, name='Corrected Simulated', )
+		# layout = go.Layout(
+		# 	title='Observed & Simulated Volume at<br> {0} - {1}'.format(codEstacion, nomEstacion),
+		# 	xaxis=dict(title='Dates', ), yaxis=dict(title='Volume (Mm<sup>3</sup>)', autorange=True),
+		# 	showlegend=True)
+		# chart_obj = PlotlyView(go.Figure(data=[observed_volume, simulated_volume, corrected_volume], layout=layout))
+		#
+		print(type(obs_volume_cum))
+		print(type(sim_volume_cum))
+		observed_volume = {
+			"x":merged_df.index.tolist(),
+			"y":obs_volume_cum,
+			"name":'Observed'
+		}
+
+		simulated_volume = {
+			"x":merged_df.index.tolist(),
+			"y":sim_volume_cum,
+			"name":'Simulated'
+		}
+		corrected_volume = {
+			"x":merged_df2.index.tolist(),
+			"y":corr_volume_cum,
+			"name":'Corrected Simulated'
+		}
+		layout = {
+            "title": "Observed & Simulated Volume",
+            "codEstacion" : codEstacion,
+            "nomEstacion" : nomEstacion,
+            "xaxis":"Dates",
+            "yaxis":'Volume (Mm<sup>3</sup>)',
+            "autorange":"true",
+			"showlegend":"true"
+        }
+		chart_obj = {
+            "data": [observed_volume, simulated_volume,corrected_volume],
+            "layout":layout
+        }
+
+
+		return chart_obj
+
+	except Exception as e:
+		print(str(e))
+		return JsonResponse({'error': 'No data found for the selected station.'})
 def get_volumeAnalysis(request):
 	"""
     Get observed data from csv files in Hydroshare
