@@ -3196,7 +3196,7 @@ def make_table_ajax(request):
 			# seasonal_periods=all_date_range_list
 		)
 		table_html = table.transpose()
-		table_html = table_html.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+		table_html = table_html.to_html(classes="table table-hover table-striped", table_id="normal_1").replace('border="1"', 'border="0"')
 
 		# Creating the Table Based on User Input
 		table2 = hs.make_table(
@@ -3484,10 +3484,19 @@ def make_table_ajax2(request):
 			lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p'],
 			# seasonal_periods=all_date_range_list
 		)
+		print(type(table2))
+		print(table2.rename(index = {'Full Time Series': 'Corrected Full Time Series'}))
+		print(table)
+		table2=table2.rename(index = {'Full Time Series': 'Corrected Full Time Series'})
 		table_html2 = table2.transpose()
-		table_html2 = table_html2.to_html(classes="table table-hover table-striped").replace('border="1"', 'border="0"')
+		table_html1 = table.transpose()
 
-		return HttpResponse(table_html2)
+		table_final = pd.merge(table_html1,table_html2,right_index = True,left_index =True)
+		table_html2 = table_html2.to_html(classes="table table-hover table-striped", table_id="corrected_1").replace('border="1"', 'border="0"')
+		table_final_html= table_final.to_html(classes="table table-hover table-striped", table_id="corrected_1").replace('border="1"', 'border="0"')
+
+		# return HttpResponse(table_html2)
+		return HttpResponse(table_final_html)
 
 	except Exception:
 		traceback.print_exc()

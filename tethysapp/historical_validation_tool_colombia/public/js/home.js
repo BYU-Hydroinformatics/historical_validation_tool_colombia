@@ -1209,6 +1209,7 @@ $(document).ready(function(){
 			// handle a successful response
 			success : function(resp) {
 				$("#metric-table").show();
+        console.log(resp);
 				$('#table').html(resp); // Render the Table
 				//console.log(resp)
 				//console.log("success"); // another sanity check
