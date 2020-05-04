@@ -319,6 +319,40 @@ function get_hydrographs (watershed, subbasin, streamcomid, stationcode, station
                 $('#hydrographs-chart').removeClass('hidden');
                 $('#hydrographs-chart').html(data);
 
+                var params1 = {
+                    stationcode: stationcode,
+                    stationname: stationname,
+                };
+                var params2 = {
+                  watershed: watershed,
+                  subbasin: subbasin,
+                  streamcomid: streamcomid,
+                  stationcode:stationcode,
+                  stationname: stationname
+                };
+
+                //Observed Discharge //
+                $('#submit-download-observed-discharge').attr({
+                    target: '_blank',
+                    href: 'get-observed-discharge-csv?' + jQuery.param(params1)
+                });
+
+                $('#download_observed_discharge').removeClass('hidden');
+                //Simulated Data
+                $('#submit-download-simulated-discharge').attr({
+                    target: '_blank',
+                    href: 'get-simulated-discharge-csv?' + jQuery.param(params2)
+                });
+
+                $('#download_simulated_discharge').removeClass('hidden');
+                //Simulated corrected
+                $('#submit-download-simulated-bc-discharge').attr({
+                    target: '_blank',
+                    href: 'get-simulated-bc-discharge-csv?' + jQuery.param(params2)
+                });
+
+                $('#download_simulated_bc_discharge').removeClass('hidden');
+
                 //resize main graph
                 Plotly.Plots.resize($("#hydrographs-chart .js-plotly-plot")[0]);
                 Plotly.relayout($("#hydrographs-chart .js-plotly-plot")[0], {
@@ -578,6 +612,7 @@ function get_hydro_stats (watershed, subbasin, streamcomid, stationcode, station
                 Plotly.newPlot('scatterplot2', data_graphs3, layout3);
                 Plotly.newPlot('scatterplotLog2', data_graphs4, layout4);
                 Plotly.newPlot('volumeAnaysis2', data_graphs5, layout5);
+
 
            		 }
                else if (data.error) {
