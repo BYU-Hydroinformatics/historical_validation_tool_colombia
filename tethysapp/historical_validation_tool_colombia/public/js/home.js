@@ -969,24 +969,24 @@ function map_events() {
 				// $('#volumeAnalysis-chart').addClass('hidden');
 				$('#forecast-chart').addClass('hidden');
 				$('#forecast-bc-chart').addClass('hidden');
-				$('#observed-loading-Q').removeClass('hidden');
-				$('#simulated-loading-Q').removeClass('hidden');
-				$('#simulated-bc-loading-Q').removeClass('hidden');
+				// $('#observed-loading-Q').removeClass('hidden');
+				// $('#simulated-loading-Q').removeClass('hidden');
+				// $('#simulated-bc-loading-Q').removeClass('hidden');
 				$('#hydrographs-loading').removeClass('hidden');
 				$('#hydro_stats-loading').removeClass('hidden');
-				$('#dailyAverages-loading').removeClass('hidden');
-				$('#monthlyAverages-loading').removeClass('hidden');
-				$('#scatterPlot-loading').removeClass('hidden');
-				$('#scatterPlotLogScale-loading').removeClass('hidden');
-				$('#volumeAnalysis-loading').removeClass('hidden');
+				// $('#dailyAverages-loading').removeClass('hidden');
+				// $('#monthlyAverages-loading').removeClass('hidden');
+				// $('#scatterPlot-loading').removeClass('hidden');
+				// $('#scatterPlotLogScale-loading').removeClass('hidden');
+				// $('#volumeAnalysis-loading').removeClass('hidden');
 				$('#forecast-loading').removeClass('hidden');
 				$('#forecast-bc-loading').removeClass('hidden');
 				$("#station-info").empty()
-				$('#download_observed_discharge').addClass('hidden');
-                $('#download_simulated_discharge').addClass('hidden');
-                $('#download_simulated_bc_discharge').addClass('hidden');
-                $('#download_forecast').addClass('hidden');
-                $('#download_forecast_bc').addClass('hidden');
+				// $('#download_observed_discharge').addClass('hidden');
+        // $('#download_simulated_discharge').addClass('hidden');
+        // $('#download_simulated_bc_discharge').addClass('hidden');
+        // $('#download_forecast').addClass('hidden');
+        // $('#download_forecast_bc').addClass('hidden');
 
 				$.ajax({
 					type: "GET",
