@@ -3243,57 +3243,57 @@ def make_table_ajax2(request):
 		# Retrieving the extra optional parameters
 		extra_param_dict = {}
 
-		if request.GET.get('mase_m', None) is not None:
-			mase_m = float(request.GET.get('mase_m', None))
+		if request.GET.get('mase_m2', None) is not None:
+			mase_m = float(request.GET.get('mase_m2', None))
 			extra_param_dict['mase_m'] = mase_m
 		else:
 			mase_m = 1
 			extra_param_dict['mase_m'] = mase_m
 
-		if request.GET.get('dmod_j', None) is not None:
-			dmod_j = float(request.GET.get('dmod_j', None))
+		if request.GET.get('dmod_j2', None) is not None:
+			dmod_j = float(request.GET.get('dmod_j2', None))
 			extra_param_dict['dmod_j'] = dmod_j
 		else:
 			dmod_j = 1
-			extra_param_dict['dmod_j'] = dmod_j
+			extra_param_dict['dmod_j']= dmod_j
 
-		if request.GET.get('nse_mod_j', None) is not None:
-			nse_mod_j = float(request.GET.get('nse_mod_j', None))
+		if request.GET.get('nse_mod_j2', None) is not None:
+			nse_mod_j = float(request.GET.get('nse_mod_j2', None))
 			extra_param_dict['nse_mod_j'] = nse_mod_j
 		else:
 			nse_mod_j = 1
 			extra_param_dict['nse_mod_j'] = nse_mod_j
 
-		if request.GET.get('h6_k_MHE', None) is not None:
-			h6_mhe_k = float(request.GET.get('h6_k_MHE', None))
+		if request.GET.get('h6_k_MHE2', None) is not None:
+			h6_mhe_k = float(request.GET.get('h6_k_MHE2', None))
 			extra_param_dict['h6_mhe_k'] = h6_mhe_k
 		else:
 			h6_mhe_k = 1
 			extra_param_dict['h6_mhe_k'] = h6_mhe_k
 
-		if request.GET.get('h6_k_AHE', None) is not None:
-			h6_ahe_k = float(request.GET.get('h6_k_AHE', None))
+		if request.GET.get('h6_k_AHE2', None) is not None:
+			h6_ahe_k = float(request.GET.get('h6_k_AHE2', None))
 			extra_param_dict['h6_ahe_k'] = h6_ahe_k
 		else:
 			h6_ahe_k = 1
 			extra_param_dict['h6_ahe_k'] = h6_ahe_k
 
-		if request.GET.get('h6_k_RMSHE', None) is not None:
-			h6_rmshe_k = float(request.GET.get('h6_k_RMSHE', None))
+		if request.GET.get('h6_k_RMSHE2', None) is not None:
+			h6_rmshe_k = float(request.GET.get('h6_k_RMSHE2', None))
 			extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
 		else:
 			h6_rmshe_k = 1
 			extra_param_dict['h6_rmshe_k'] = h6_rmshe_k
 
-		if float(request.GET.get('lm_x_bar', None)) != 1:
-			lm_x_bar_p = float(request.GET.get('lm_x_bar', None))
+		if float(request.GET.get('lm_x_bar2', None)) != 1:
+			lm_x_bar_p = float(request.GET.get('lm_x_bar2', None))
 			extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
 		else:
 			lm_x_bar_p = None
 			extra_param_dict['lm_x_bar_p'] = lm_x_bar_p
 
-		if float(request.GET.get('d1_p_x_bar', None)) != 1:
-			d1_p_x_bar_p = float(request.GET.get('d1_p_x_bar', None))
+		if float(request.GET.get('d1_p_x_bar2', None)) != 1:
+			d1_p_x_bar_p = float(request.GET.get('d1_p_x_bar2', None))
 			extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 		else:
 			d1_p_x_bar_p = None

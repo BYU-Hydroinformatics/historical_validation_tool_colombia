@@ -1024,41 +1024,48 @@ function resize_graphs() {
         	'yaxis.autorange': true
         });
     });
-    $("#dailyAverages_tab_link").click(function() {
-    	Plotly.Plots.resize($("#dailyAverages-chart .js-plotly-plot")[0]);
-    	Plotly.relayout($("#dailyAverages-chart .js-plotly-plot")[0], {
+    $("#hydro_stats_tab_link").click(function() {
+    	Plotly.Plots.resize($("#hydro_stats-chart .js-plotly-plot")[0]);
+    	Plotly.relayout($("#hydro_stats-chart .js-plotly-plot")[0], {
         	'xaxis.autorange': true,
         	'yaxis.autorange': true
         });
     });
-    $("#monthlyAverages_tab_link").click(function() {
-    	Plotly.Plots.resize($("#monthlyAverages-chart .js-plotly-plot")[0]);
-    	Plotly.relayout($("#monthlyAverages-chart .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
-    $("#scatterPlot_tab_link").click(function() {
-    	Plotly.Plots.resize($("#scatterPlot-chart .js-plotly-plot")[0]);
-    	Plotly.relayout($("#scatterPlot-chart .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
-    $("#scatterPlotLogScale_tab_link").click(function() {
-    	Plotly.Plots.resize($("#scatterPlotLogScale-chart .js-plotly-plot")[0]);
-    	Plotly.relayout($("#scatterPlotLogScale-chart .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
-    $("#volumeAnalysis_tab_link").click(function() {
-    	Plotly.Plots.resize($("#volumeAnalysis-chart .js-plotly-plot")[0]);
-    	Plotly.relayout($("#volumeAnalysis-chart .js-plotly-plot")[0], {
-        	'xaxis.autorange': true,
-        	'yaxis.autorange': true
-        });
-    });
+    // $("#dailyAverages_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#dailyAverages-chart .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#dailyAverages-chart .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
+    // $("#monthlyAverages_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#monthlyAverages-chart .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#monthlyAverages-chart .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
+    // $("#scatterPlot_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#scatterPlot-chart .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#scatterPlot-chart .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
+    // $("#scatterPlotLogScale_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#scatterPlotLogScale-chart .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#scatterPlotLogScale-chart .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
+    // $("#volumeAnalysis_tab_link").click(function() {
+    // 	Plotly.Plots.resize($("#volumeAnalysis-chart .js-plotly-plot")[0]);
+    // 	Plotly.relayout($("#volumeAnalysis-chart .js-plotly-plot")[0], {
+    //     	'xaxis.autorange': true,
+    //     	'yaxis.autorange': true
+    //     });
+    // });
     $("#forecast_tab_link").click(function() {
         Plotly.Plots.resize($("#forecast-chart .js-plotly-plot")[0]);
         Plotly.relayout($("#forecast-chart .js-plotly-plot")[0], {
@@ -1099,130 +1106,130 @@ $(function() {
     });
 });
 
-// Function for the select2 metric selection tool
-$(document).ready(function() {
-    $('#metric_select2').select2({ width: 'resolve' });
-});
+// // Function for the select2 metric selection tool
+// $(document).ready(function() {
+//     $('#metric_select2').select2({ width: 'resolve' });
+// });
+//
+// $('#metric_select2').on("select2:close", function(e) { // Display optional parameters
+//     //console.log("triggered!");
+//     let select_val = $( '#metric_select2' ).val();
+// 	//console.log(select_val);
+//
+//     if ( select_val.includes("MASE") ) {
+//         $('#mase_param_div').fadeIn()
+//     } else {
+//         $('#mase_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("d (Mod.)") ) {
+//         $('#dmod_param_div').fadeIn()
+//     } else {
+//         $('#dmod_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("NSE (Mod.)") ) {
+//         $('#nse_mod_param_div').fadeIn()
+//     } else {
+//         $('#nse_mod_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("E1'") ) {
+//         $('#lm_eff_param_div').fadeIn()
+//     } else {
+//         $('#lm_eff_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("D1'") ) {
+//         $('#d1_p_param_div').fadeIn()
+//     } else {
+//         $('#d1_p_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("H6 (MHE)") ) {
+//         $('#mean_h6_param_div').fadeIn()
+//     } else {
+//         $('#mean_h6_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("H6 (MAHE)") ) {
+//         $('#mean_abs_H6_param_div').fadeIn()
+//     } else {
+//         $('#mean_abs_H6_param_div').fadeOut()
+//     }
+//
+//     if ( select_val.includes("H6 (RMSHE)") ) {
+//         $('#rms_H6_param_div').fadeIn()
+//     } else {
+//         $('#rms_H6_param_div').fadeOut()
+//     }
+// });
 
-$('#metric_select2').on("select2:close", function(e) { // Display optional parameters
-    //console.log("triggered!");
-    let select_val = $( '#metric_select2' ).val();
-	//console.log(select_val);
 
-    if ( select_val.includes("MASE") ) {
-        $('#mase_param_div').fadeIn()
-    } else {
-        $('#mase_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("d (Mod.)") ) {
-        $('#dmod_param_div').fadeIn()
-    } else {
-        $('#dmod_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("NSE (Mod.)") ) {
-        $('#nse_mod_param_div').fadeIn()
-    } else {
-        $('#nse_mod_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("E1'") ) {
-        $('#lm_eff_param_div').fadeIn()
-    } else {
-        $('#lm_eff_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("D1'") ) {
-        $('#d1_p_param_div').fadeIn()
-    } else {
-        $('#d1_p_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("H6 (MHE)") ) {
-        $('#mean_h6_param_div').fadeIn()
-    } else {
-        $('#mean_h6_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("H6 (MAHE)") ) {
-        $('#mean_abs_H6_param_div').fadeIn()
-    } else {
-        $('#mean_abs_H6_param_div').fadeOut()
-    }
-
-    if ( select_val.includes("H6 (RMSHE)") ) {
-        $('#rms_H6_param_div').fadeIn()
-    } else {
-        $('#rms_H6_param_div').fadeOut()
-    }
-});
-
-
-// Event handler for the make table button
-$(document).ready(function(){
-
-    $("#make-table").click(function(){
-        //console.log('Make Table Event Triggered');
-        var model = $('#model option:selected').text();
-        var watershed = 'south_america' //OJO buscar como hacerla generica
-        var subbasin = 'continental' //OJO buscar como hacerla generica
-        var startdate = '';
-        let xName = $("#Station-Name-Tab")
-        let xCode = $("#Station-Code-Tab")
-        let xComid = $("#COMID-Tab")
-        let htmlName = xName.html()
-        let htmlCode = xCode.html()
-        let htmlComid = xComid.html()
-        var arName = htmlName.split(': ')
-        var arCode = htmlCode.split(': ')
-        var arComid = htmlComid.split(': ')
-        let stationname = arName[1];
-        let stationcode = arCode[1];
-        let streamcomid = arComid[1];
-
-        let selected_metrics = $( '#metric_select2' ).val();  // Selected Metrics
-		let additionalParametersNameList = ["mase_m", "dmod_j", "nse_mod_j", "h6_k_MHE", "h6_k_AHE", "h6_k_RMSHE", "lm_x_bar", "d1_p_x_bar"];
-		let additionalParametersValuesList = [];
-
-		let getData = {
-			'watershed': watershed,
-			'subbasin': subbasin,
-			'streamcomid': streamcomid,
-			'stationcode': stationcode,
-			'stationname': stationname,
-			'metrics': selected_metrics,
-		}
-
-		for (let i = 0; i < additionalParametersNameList.length; i++) {
-			metricAbbr = additionalParametersNameList[i];
-			getData[metricAbbr] = $(`#${metricAbbr}`).val();
-		}
-
-		// Creating the table
-		$.ajax({
-			url : "make-table-ajax", // the endpoint
-			type : "GET", // http method
-			data: getData,
-//			contentType : "json",
-
-			// handle a successful response
-			success : function(resp) {
-				$("#metric-table").show();
-        console.log(resp);
-				$('#table').html(resp); // Render the Table
-				//console.log(resp)
-				//console.log("success"); // another sanity check
-			},
-
-			// handle a non-successful response
-			error : function(xhr, errmsg, err) {
-				$('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-				console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-			}
-		});
-	});
-});
+// // Event handler for the make table button
+// $(document).ready(function(){
+//
+//     $("#make-table").click(function(){
+//         //console.log('Make Table Event Triggered');
+//         var model = $('#model option:selected').text();
+//         var watershed = 'south_america' //OJO buscar como hacerla generica
+//         var subbasin = 'continental' //OJO buscar como hacerla generica
+//         var startdate = '';
+//         let xName = $("#Station-Name-Tab")
+//         let xCode = $("#Station-Code-Tab")
+//         let xComid = $("#COMID-Tab")
+//         let htmlName = xName.html()
+//         let htmlCode = xCode.html()
+//         let htmlComid = xComid.html()
+//         var arName = htmlName.split(': ')
+//         var arCode = htmlCode.split(': ')
+//         var arComid = htmlComid.split(': ')
+//         let stationname = arName[1];
+//         let stationcode = arCode[1];
+//         let streamcomid = arComid[1];
+//
+//         let selected_metrics = $( '#metric_select2' ).val();  // Selected Metrics
+// 		let additionalParametersNameList = ["mase_m", "dmod_j", "nse_mod_j", "h6_k_MHE", "h6_k_AHE", "h6_k_RMSHE", "lm_x_bar", "d1_p_x_bar"];
+// 		let additionalParametersValuesList = [];
+//
+// 		let getData = {
+// 			'watershed': watershed,
+// 			'subbasin': subbasin,
+// 			'streamcomid': streamcomid,
+// 			'stationcode': stationcode,
+// 			'stationname': stationname,
+// 			'metrics': selected_metrics,
+// 		}
+//
+// 		for (let i = 0; i < additionalParametersNameList.length; i++) {
+// 			metricAbbr = additionalParametersNameList[i];
+// 			getData[metricAbbr] = $(`#${metricAbbr}`).val();
+// 		}
+//
+// 		// Creating the table
+// 		$.ajax({
+// 			url : "make-table-ajax", // the endpoint
+// 			type : "GET", // http method
+// 			data: getData,
+// //			contentType : "json",
+//
+// 			// handle a successful response
+// 			success : function(resp) {
+// 				$("#metric-table").show();
+//         console.log(resp);
+// 				$('#table').html(resp); // Render the Table
+// 				//console.log(resp)
+// 				//console.log("success"); // another sanity check
+// 			},
+//
+// 			// handle a non-successful response
+// 			error : function(xhr, errmsg, err) {
+// 				$('#table').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+// 				console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+// 			}
+// 		});
+// 	});
+// });
 
 // Function for the select4 metric selection tool
 $(document).ready(function() {
@@ -1308,7 +1315,7 @@ $(document).ready(function(){
         let streamcomid = arComid[1];
 
         let selected_metrics = $( '#metric_select4' ).val();  // Selected Metrics
-		let additionalParametersNameList = ["mase_m", "dmod_j", "nse_mod_j", "h6_k_MHE", "h6_k_AHE", "h6_k_RMSHE", "lm_x_bar", "d1_p_x_bar"];
+		let additionalParametersNameList = ["mase_m2", "dmod_j2", "nse_mod_j2", "h6_k_MHE2", "h6_k_AHE2", "h6_k_RMSHE2", "lm_x_bar2", "d1_p_x_bar2"];
 		let additionalParametersValuesList = [];
 
 		let getData = {
@@ -1324,7 +1331,7 @@ $(document).ready(function(){
 			metricAbbr = additionalParametersNameList[i];
 			getData[metricAbbr] = $(`#${metricAbbr}`).val();
 		}
-
+    console.log(getData);
 		// Creating the table
 		$.ajax({
 			url : "make-table-ajax2", // the endpoint
