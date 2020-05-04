@@ -1410,7 +1410,7 @@ function get_time_series(watershed, subbasin, streamcomid, startdate) {
         },
         success: function(data) {
             if (!data.error) {
-                $('#forecast-loading').addClass('hidden');
+                // $('#forecast-loading').addClass('hidden');
                 $('#dates').removeClass('hidden');
                 //$loading.addClass('hidden');
                 $('#forecast-chart').removeClass('hidden');
@@ -1477,10 +1477,15 @@ function get_time_series_bc(watershed, subbasin, streamcomid, startdate, station
         success: function(data) {
             if (!data.error) {
                 $('#forecast-bc-loading').addClass('hidden');
+                $('#forecast-loading').addClass('hidden');
                 $('#dates').removeClass('hidden');
                 //$loading.addClass('hidden');
+                $('#forecast-chart').removeClass('hidden');
+                //resize main graph
+
                 $('#forecast-bc-chart').removeClass('hidden');
                 $('#forecast-bc-chart').html(data);
+
 
                 //resize main graph
                 Plotly.Plots.resize($("#forecast-bc-chart .js-plotly-plot")[0]);

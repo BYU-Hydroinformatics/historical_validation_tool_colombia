@@ -4052,7 +4052,7 @@ def get_time_series_bc(request):
 			return_shapes = []
 
 		layout = go.Layout(
-			title="Forecast<br><sub>{0} ({1}): {2}</sub>".format(
+			title="Corrected Forecast<br><sub>{0} ({1}): {2}</sub>".format(
 				watershed, subbasin, comid),
 			xaxis=dict(
 				title='Date',
