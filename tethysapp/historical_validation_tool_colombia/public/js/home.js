@@ -1326,6 +1326,18 @@ $('#metric_select4').on("select2:close", function(e) { // Display optional param
         $('#rms_H6_param_div2').fadeOut()
     }
 });
+// THIS DELETE THE DUPLICATES IN THE ARRAY MERGE //
+function arrayUnique(array) {
+    var a = array.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+}
 
 function makeDefaultTable(watershed, subbasin, streamcomid, stationcode, stationname){
   let selected_metrics = ["ME","RMSE","NRMSE (Mean)","MAPE","NSE","KGE (2009)", "KGE (2012)"];  // Selected Metrics
@@ -1392,47 +1404,52 @@ $(document).ready(function(){
         let stationcode = arCode[1];
         let streamcomid = arComid[1];
 
+        let metrics_default = ["ME","RMSE","NRMSE (Mean)","MAPE","NSE","KGE (2009)", "KGE (2012)"];  // Default Metrics
+
         let selected_metrics = $( '#metric_select4' ).val();  // Selected Metrics
 
-		let additionalParametersNameList = ["mase_m2", "dmod_j2", "nse_mod_j2", "h6_k_MHE2", "h6_k_AHE2", "h6_k_RMSHE2", "lm_x_bar2", "d1_p_x_bar2"];
-		let additionalParametersValuesList = [];
+        let selected_metric_joined = arrayUnique(metrics_default.concat(selected_metrics));
+        console.log(selected_metric_joined);
 
-		let getData = {
-			'watershed': watershed,
-			'subbasin': subbasin,
-			'streamcomid': streamcomid,
-			'stationcode': stationcode,
-			'stationname': stationname,
-			'metrics': selected_metrics,
-		}
+    		let additionalParametersNameList = ["mase_m2", "dmod_j2", "nse_mod_j2", "h6_k_MHE2", "h6_k_AHE2", "h6_k_RMSHE2", "lm_x_bar2", "d1_p_x_bar2"];
+    		let additionalParametersValuesList = [];
 
-		for (let i = 0; i < additionalParametersNameList.length; i++) {
-			metricAbbr = additionalParametersNameList[i];
-			getData[metricAbbr] = $(`#${metricAbbr}`).val();
-		}
-    console.log(getData);
-		// Creating the table
-		$.ajax({
-			url : "make-table-ajax2", // the endpoint
-			type : "GET", // http method
-			data: getData,
-//			contentType : "json",
+    		let getData = {
+    			'watershed': watershed,
+    			'subbasin': subbasin,
+    			'streamcomid': streamcomid,
+    			'stationcode': stationcode,
+    			'stationname': stationname,
+    			'metrics': selected_metric_joined,
+    		}
 
-			// handle a successful response
-			success : function(resp) {
-				$("#metric-table2").show();
-				$('#table2').html(resp); // Render the Table
-				//console.log(resp)
-				//console.log("success"); // another sanity check
-			},
+    		for (let i = 0; i < additionalParametersNameList.length; i++) {
+    			metricAbbr = additionalParametersNameList[i];
+    			getData[metricAbbr] = $(`#${metricAbbr}`).val();
+    		}
+        console.log(getData);
+    		// Creating the table
+    		$.ajax({
+    			url : "make-table-ajax2", // the endpoint
+    			type : "GET", // http method
+    			data: getData,
+    //			contentType : "json",
 
-			// handle a non-successful response
-			error : function(xhr, errmsg, err) {
-				$('#table2').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
-				console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-			}
-		});
-	});
+    			// handle a successful response
+    			success : function(resp) {
+    				$("#metric-table2").show();
+    				$('#table2').html(resp); // Render the Table
+    				//console.log(resp)
+    				//console.log("success"); // another sanity check
+    			},
+
+    			// handle a non-successful response
+    			error : function(xhr, errmsg, err) {
+    				$('#table2').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+".</div>"); // add the error to the dom
+    				console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+    			}
+    		});
+    	});
 });
 
 function get_available_dates(watershed, subbasin, streamcomid) {
