@@ -21,12 +21,17 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from scipy import integrate
 from tethys_sdk.gizmos import *
+from tethys_sdk.routing import controller
 
 import time
 from hs_restclient import HydroShare, HydroShareAuthBasic
 from .app import HistoricalValidationToolColombia as app
 
 
+@controller(
+	name='home',
+    url='historical-validation-tool-colombia',
+)
 def home(request):
 	"""
 	Controller for the app home page.
@@ -100,17 +105,22 @@ def home(request):
 
 	return render(request, 'historical_validation_tool_colombia/home.html', context)
 
-def get_popup_response(request):
+@controller(
+	name='get_popup_response',
+    url='get-request-data',
+    app_workspace=True,
+)
+def get_popup_response(request, app_workspace):
 	"""
 	get station attributes
 	"""
 
 	start_time = time.time()
 
-	observed_data_path_file = os.path.join(app.get_app_workspace().path, 'observed_data.json')
-	simulated_data_path_file = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
-	corrected_data_path_file = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
-	forecast_data_path_file = os.path.join(app.get_app_workspace().path, 'forecast_data.json')
+	observed_data_path_file = os.path.join(app_workspace.path, 'observed_data.json')
+	simulated_data_path_file = os.path.join(app_workspace.path, 'simulated_data.json')
+	corrected_data_path_file = os.path.join(app_workspace.path, 'corrected_data.json')
+	forecast_data_path_file = os.path.join(app_workspace.path, 'forecast_data.json')
 
 	f = open(observed_data_path_file, 'w')
 	f.close()
@@ -152,7 +162,7 @@ def get_popup_response(request):
 
 		observed_df = pd.DataFrame(data=dataDischarge, index=datesDischarge, columns=['Observed Streamflow'])
 
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df.reset_index(level=0, inplace=True)
 		observed_df['index'] = observed_df['index'].dt.strftime('%Y-%m-%d')
 		observed_df.set_index('index', inplace=True)
@@ -169,7 +179,7 @@ def get_popup_response(request):
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df = pd.DataFrame(data=simulated_df.iloc[:, 0].values, index=simulated_df.index, columns=['Simulated Streamflow'])
 
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df.reset_index(level=0, inplace=True)
 		simulated_df['datetime'] = simulated_df['datetime'].dt.strftime('%Y-%m-%d')
 		simulated_df.set_index('datetime', inplace=True)
@@ -193,7 +203,12 @@ def get_popup_response(request):
 		})
 
 
-def get_hydrographs(request):
+@controller(
+	name='get_hydrographs',
+    url='get-hydrographs',
+    app_workspace=True
+)
+def get_hydrographs(request, app_workspace):
 	"""
 	Get observed data from csv files in Hydroshare
 	Get historic simulations from ERA Interim
@@ -211,20 +226,20 @@ def get_hydrographs(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Correct the Bias in Sumulation'''
 		corrected_df = geoglows.bias.correct_historical(simulated_df, observed_df)
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df.reset_index(level=0, inplace=True)
 		corrected_df['index'] = corrected_df['index'].dt.strftime('%Y-%m-%d')
 		corrected_df.set_index('index', inplace=True)
@@ -261,7 +276,12 @@ def get_hydrographs(request):
 		})
 
 
-def get_dailyAverages(request):
+@controller(
+	name='get_dailyAverages',
+    url='get-dailyAverages',
+    app_workspace=True
+)
+def get_dailyAverages(request, app_workspace):
 	"""
 	Get observed data from csv files in Hydroshare
 	Get historic simulations from ERA Interim
@@ -278,19 +298,19 @@ def get_dailyAverages(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -339,7 +359,12 @@ def get_dailyAverages(request):
 		})
 
 
-def get_monthlyAverages(request):
+@controller(
+	name='get_monthlyAverages',
+    url='get-monthlyAverages',
+    app_workspace=True,
+)
+def get_monthlyAverages(request, app_workspace):
 	"""
 	Get observed data from csv files in Hydroshare
 	Get historic simulations from ERA Interim
@@ -356,19 +381,19 @@ def get_monthlyAverages(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -417,7 +442,12 @@ def get_monthlyAverages(request):
 		})
 
 
-def get_scatterPlot(request):
+@controller(
+	name='get_scatterPlot',
+    url='get-scatterPlot',
+    app_workspace=True
+)
+def get_scatterPlot(request, app_workspace):
 	"""
 	Get observed data from csv files in Hydroshare
 	Get historic simulations from ERA Interim
@@ -434,19 +464,19 @@ def get_scatterPlot(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -535,6 +565,11 @@ def get_scatterPlot(request):
 		})
 
 
+@controller(
+	name='get_scatterPlotLogScale',
+    url='get-scatterPlotLogScale',
+    app_workspace=True
+)
 def get_scatterPlotLogScale(request):
 	"""
 	Get observed data from csv files in Hydroshare
@@ -552,19 +587,19 @@ def get_scatterPlotLogScale(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -626,6 +661,11 @@ def get_scatterPlotLogScale(request):
 			'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
 		})
 
+@controller(
+	name='get_volumeAnalysis',
+    url='get-volumeAnalysis',
+    app_workspace=True,
+)
 def get_volumeAnalysis(request):
 	"""
 	Get observed data from csv files in Hydroshare
@@ -643,19 +683,19 @@ def get_volumeAnalysis(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -725,7 +765,12 @@ def get_volumeAnalysis(request):
 		})
 
 
-def volume_table_ajax(request):
+@controller(
+	name='volume_table_ajax',
+    url='volume-table-ajax',
+    app_workspace=True,
+)
+def volume_table_ajax(request, app_workspace):
 	"""Calculates the volumes of the simulated and
 	observed streamflow"""
 
@@ -740,19 +785,19 @@ def volume_table_ajax(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -792,7 +837,12 @@ def volume_table_ajax(request):
 		})
 
 
-def make_table_ajax(request):
+@controller(
+	name='make_table_ajax',
+    url='make-table-ajax',
+    app_workspace=True,
+)
+def make_table_ajax(request, app_workspace):
 
 	start_time = time.time()
 
@@ -868,19 +918,19 @@ def make_table_ajax(request):
 			extra_param_dict['d1_p_x_bar_p'] = d1_p_x_bar_p
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -964,7 +1014,12 @@ def get_units_title(unit_type):
 	return units_title
 
 
-def get_time_series(request):
+@controller(
+	name='get-time-series',
+    url='get-time-series',
+    app_workspace=True,
+)
+def get_time_series(request, app_workspace):
 
 	start_time = time.time()
 
@@ -990,7 +1045,7 @@ def get_time_series(request):
 		forecast_df.index = forecast_df.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
 		forecast_df.index = pd.to_datetime(forecast_df.index)
 
-		forecast_data_file_path = os.path.join(app.get_app_workspace().path, 'forecast_data.json')
+		forecast_data_file_path = os.path.join(app_workspace.path, 'forecast_data.json')
 		forecast_df.index.name = 'Datetime'
 		forecast_df.to_json(forecast_data_file_path)
 
@@ -1209,7 +1264,12 @@ def get_time_series(request):
 		})
 
 
-def get_time_series_bc(request):
+@controller(
+	name='get-time-series-bc',
+    url='get-time-series-bc',
+    app_workspace=True,
+)
+def get_time_series_bc(request, app_workspace):
 
 	start_time = time.time()
 
@@ -1224,19 +1284,19 @@ def get_time_series_bc(request):
 		startdate = get_data['startdate']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -1254,7 +1314,7 @@ def get_time_series_bc(request):
 		forecast_ens.index = forecast_ens.index.to_series().dt.strftime("%Y-%m-%d %H:%M:%S")
 		forecast_ens.index = pd.to_datetime(forecast_ens.index)
 
-		forecast_ens_file_path = os.path.join(app.get_app_workspace().path, 'forecast_ens.json')
+		forecast_ens_file_path = os.path.join(app_workspace.path, 'forecast_ens.json')
 		forecast_ens.index.name = 'Datetime'
 		forecast_ens.to_json(forecast_ens_file_path)
 
@@ -1301,7 +1361,7 @@ def get_time_series_bc(request):
 		corrected_ensembles = corrected_ensembles.multiply(min_factor_df, axis=0)
 		corrected_ensembles = corrected_ensembles.multiply(max_factor_df, axis=0)
 
-		forecast_ens_bc_file_path = os.path.join(app.get_app_workspace().path, 'forecast_ens_bc.json')
+		forecast_ens_bc_file_path = os.path.join(app_workspace.path, 'forecast_ens_bc.json')
 		corrected_ensembles.index.name = 'Datetime'
 		corrected_ensembles.to_json(forecast_ens_bc_file_path)
 
@@ -1330,7 +1390,7 @@ def get_time_series_bc(request):
 
 		fixed_stats = pd.concat([max_df, p75_df, mean_df, p25_df, min_df, high_res_df], axis=1)
 
-		forecast_data_bc_file_path = os.path.join(app.get_app_workspace().path, 'forecast_data_bc.json')
+		forecast_data_bc_file_path = os.path.join(app_workspace.path, 'forecast_data_bc.json')
 		fixed_stats.index.name = 'Datetime'
 		fixed_stats.to_json(forecast_data_bc_file_path)
 
@@ -1619,6 +1679,10 @@ def get_time_series_bc(request):
 		})
 
 
+@controller(
+	name='get-available-dates',
+    url='ecmwf-rapid/get-available-dates',
+)
 def get_available_dates(request):
 
 	get_data = request.GET
@@ -1652,7 +1716,12 @@ def get_available_dates(request):
 	})
 
 
-def get_observed_discharge_csv(request):
+@controller(
+    name='get_observed_discharge_csv',
+    url='get-observed-discharge-csv',
+    app_workspace=True,
+)
+def get_observed_discharge_csv(request, app_workspace):
 	"""
 	Get observed data from csv files in Hydroshare
 	"""
@@ -1666,7 +1735,7 @@ def get_observed_discharge_csv(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Observed Data'''
-		observed_data_file_path = os.path.join(app.get_app_workspace().path, 'observed_data.json')
+		observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
 		observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
 		observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
 		observed_df.sort_index(inplace=True, ascending=True)
@@ -1685,9 +1754,13 @@ def get_observed_discharge_csv(request):
 		return JsonResponse({
 			'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
 		})
-
-
-def get_simulated_discharge_csv(request):
+  
+@controller(
+	name='get_simulated_discharge_csv',
+    url='get-simulated-discharge-csv',
+    app_workspace=True,
+)
+def get_simulated_discharge_csv(request, app_workspace):
 	"""
 	Get historic simulations from ERA Interim
 	"""
@@ -1701,7 +1774,7 @@ def get_simulated_discharge_csv(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Simulated Data'''
-		simulated_data_file_path = os.path.join(app.get_app_workspace().path, 'simulated_data.json')
+		simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
 		simulated_df = pd.read_json(simulated_data_file_path, convert_dates=True)
 		simulated_df.index = pd.to_datetime(simulated_df.index)
 		simulated_df.sort_index(inplace=True, ascending=True)
@@ -1722,7 +1795,12 @@ def get_simulated_discharge_csv(request):
 		})
 
 
-def get_simulated_bc_discharge_csv(request):
+@controller(
+	name='get_simulated_bc_discharge_csv',
+    url='get-simulated-bc-discharge-csv',
+    app_workspace=True,
+)
+def get_simulated_bc_discharge_csv(request, app_workspace):
 	"""
 	Get historic simulations from ERA Interim
 	"""
@@ -1737,7 +1815,7 @@ def get_simulated_bc_discharge_csv(request):
 		nomEstacion = get_data['stationname']
 
 		'''Get Bias Corrected Data'''
-		corrected_data_file_path = os.path.join(app.get_app_workspace().path, 'corrected_data.json')
+		corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
 		corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
 		corrected_df.index = pd.to_datetime(corrected_df.index)
 		corrected_df.sort_index(inplace=True, ascending=True)
@@ -1758,6 +1836,11 @@ def get_simulated_bc_discharge_csv(request):
 		})
 
 
+@controller(
+	name='get_forecast_data_csv',
+    url='get-forecast-data-csv',
+    app_workspace=True,
+)
 def get_forecast_data_csv(request):
 	"""""
 	Returns Forecast data as csv
@@ -1771,7 +1854,7 @@ def get_forecast_data_csv(request):
 		startdate = get_data['startdate']
 
 		'''Get Forecast Data'''
-		forecast_data_file_path = os.path.join(app.get_app_workspace().path, 'forecast_data.json')
+		forecast_data_file_path = os.path.join(app_workspace.path, 'forecast_data.json')
 		forecast_df = pd.read_json(forecast_data_file_path, convert_dates=True)
 		forecast_df.index = pd.to_datetime(forecast_df.index)
 		forecast_df.sort_index(inplace=True, ascending=True)
@@ -1793,7 +1876,12 @@ def get_forecast_data_csv(request):
 		})
 
 
-def get_forecast_ensemble_data_csv(request):
+@controller(
+	name='get_forecast_ensemble_data_csv',
+    url='get-forecast-ensemble-data-csv',
+    app_workspace=True,
+)
+def get_forecast_ensemble_data_csv(request, app_workspace):
 	"""""
 	Returns Forecast data as csv
 	"""""
@@ -1808,7 +1896,7 @@ def get_forecast_ensemble_data_csv(request):
 		startdate = get_data['startdate']
 
 		'''Get Forecast Ensemble Data'''
-		forecast_ens_file_path = os.path.join(app.get_app_workspace().path, 'forecast_ens.json')
+		forecast_ens_file_path = os.path.join(app_workspace.path, 'forecast_ens.json')
 		forecast_ens = pd.read_json(forecast_ens_file_path, convert_dates=True)
 		forecast_ens.index = pd.to_datetime(forecast_ens.index)
 		forecast_ens.sort_index(inplace=True, ascending=True)
@@ -1830,7 +1918,12 @@ def get_forecast_ensemble_data_csv(request):
 		})
 
 
-def get_forecast_bc_data_csv(request):
+@controller(
+	name='get_forecast_bc_data_csv',
+    url='get-forecast-bc-data-csv',
+    app_workspace=True,
+)
+def get_forecast_bc_data_csv(request, app_workspace):
 	"""""
 	Returns Forecast data as csv
 	"""""
@@ -1845,7 +1938,7 @@ def get_forecast_bc_data_csv(request):
 		startdate = get_data['startdate']
 
 		'''Get Bias-Corrected Forecast Data'''
-		forecast_data_bc_file_path = os.path.join(app.get_app_workspace().path, 'forecast_data_bc.json')
+		forecast_data_bc_file_path = os.path.join(app_workspace.path, 'forecast_data_bc.json')
 		fixed_stats = pd.read_json(forecast_data_bc_file_path, convert_dates=True)
 		fixed_stats.index = pd.to_datetime(fixed_stats.index)
 		fixed_stats.sort_index(inplace=True, ascending=True)
@@ -1867,7 +1960,12 @@ def get_forecast_bc_data_csv(request):
 		})
 
 
-def get_forecast_ensemble_bc_data_csv(request):
+@controller(
+	name='get_forecast_ensemble_bc_data_csv',
+    url='get-forecast-ensemble-bc-data-csv',
+    app_workspace=True,
+)
+def get_forecast_ensemble_bc_data_csv(request, app_workspace):
 	"""""
 	Returns Forecast data as csv
 	"""""
@@ -1882,7 +1980,7 @@ def get_forecast_ensemble_bc_data_csv(request):
 		startdate = get_data['startdate']
 
 		'''Get Forecast Ensemble Data'''
-		forecast_ens_bc_file_path = os.path.join(app.get_app_workspace().path, 'forecast_ens_bc.json')
+		forecast_ens_bc_file_path = os.path.join(app_workspace.path, 'forecast_ens_bc.json')
 		corrected_ensembles = pd.read_json(forecast_ens_bc_file_path, convert_dates=True)
 		corrected_ensembles.index = pd.to_datetime(corrected_ensembles.index)
 		corrected_ensembles.sort_index(inplace=True, ascending=True)

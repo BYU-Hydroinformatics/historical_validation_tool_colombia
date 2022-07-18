@@ -7,7 +7,7 @@ class HistoricalValidationToolColombia(TethysAppBase):
     """
 
     name = 'Historical Validation Tool Colombia'
-    index = 'historical_validation_tool_colombia:home'
+    index = 'home'
     icon = 'historical_validation_tool_colombia/images/historic_validation_colombia_logo.png'
     package = 'historical_validation_tool_colombia'
     root_url = 'historical-validation-tool-colombia'
@@ -29,115 +29,6 @@ class HistoricalValidationToolColombia(TethysAppBase):
                 required=True,
             ),
         )
-
-    def url_maps(self):
-        """
-        Add controllers
-        """
-        UrlMap = url_map_maker(self.root_url)
-
-        url_maps = (
-            UrlMap(
-                name='home',
-                url='historical-validation-tool-colombia',
-                controller='historical_validation_tool_colombia.controllers.home'
-            ),
-            UrlMap(
-                name='get_popup_response',
-                url='get-request-data',
-                controller='historical_validation_tool_colombia.controllers.get_popup_response'
-            ),
-            UrlMap(
-                name='get_hydrographs',
-                url='get-hydrographs',
-                controller='historical_validation_tool_colombia.controllers.get_hydrographs'
-            ),
-            UrlMap(
-                name='get_dailyAverages',
-                url='get-dailyAverages',
-                controller='historical_validation_tool_colombia.controllers.get_dailyAverages'
-            ),
-            UrlMap(
-                name='get_monthlyAverages',
-                url='get-monthlyAverages',
-                controller='historical_validation_tool_colombia.controllers.get_monthlyAverages'
-            ),
-            UrlMap(
-                name='get_scatterPlot',
-                url='get-scatterPlot',
-                controller='historical_validation_tool_colombia.controllers.get_scatterPlot'
-            ),
-            UrlMap(
-                name='get_scatterPlotLogScale',
-                url='get-scatterPlotLogScale',
-                controller='historical_validation_tool_colombia.controllers.get_scatterPlotLogScale'
-            ),
-            UrlMap(
-                name='get_volumeAnalysis',
-                url='get-volumeAnalysis',
-                controller='historical_validation_tool_colombia.controllers.get_volumeAnalysis'
-            ),
-            UrlMap(
-                name='volume_table_ajax',
-                url='volume-table-ajax',
-                controller='historical_validation_tool_colombia.controllers.volume_table_ajax'
-            ),
-            UrlMap(
-                name='make_table_ajax',
-                url='make-table-ajax',
-                controller='historical_validation_tool_colombia.controllers.make_table_ajax'
-            ),
-            UrlMap(
-                name='get-available-dates',
-                url='ecmwf-rapid/get-available-dates',
-                controller='historical_validation_tool_colombia.controllers.get_available_dates'
-            ),
-            UrlMap(
-                name='get-time-series',
-                url='get-time-series',
-                controller='historical_validation_tool_colombia.controllers.get_time_series'),
-            UrlMap(
-                name='get-time-series-bc',
-                url='get-time-series-bc',
-                controller='historical_validation_tool_colombia.controllers.get_time_series_bc'),
-            UrlMap(
-                name='get_observed_discharge_csv',
-                url='get-observed-discharge-csv',
-                controller='historical_validation_tool_colombia.controllers.get_observed_discharge_csv'
-            ),
-            UrlMap(
-                name='get_simulated_discharge_csv',
-                url='get-simulated-discharge-csv',
-                controller='historical_validation_tool_colombia.controllers.get_simulated_discharge_csv'
-            ),
-            UrlMap(
-                name='get_simulated_bc_discharge_csv',
-                url='get-simulated-bc-discharge-csv',
-                controller='historical_validation_tool_colombia.controllers.get_simulated_bc_discharge_csv'
-            ),
-            UrlMap(
-                name='get_forecast_data_csv',
-                url='get-forecast-data-csv',
-                controller='historical_validation_tool_colombia.controllers.get_forecast_data_csv'
-            ),
-            UrlMap(
-                name='get_forecast_bc_data_csv',
-                url='get-forecast-bc-data-csv',
-                controller='historical_validation_tool_colombia.controllers.get_forecast_bc_data_csv'
-            ),
-            UrlMap(
-                name='get_forecast_ensemble_data_csv',
-                url='get-forecast-ensemble-data-csv',
-                controller='historical_validation_tool_colombia.controllers.get_forecast_ensemble_data_csv'
-            ),
-            UrlMap(
-                name='get_forecast_ensemble_bc_data_csv',
-                url='get-forecast-ensemble-bc-data-csv',
-                controller='historical_validation_tool_colombia.controllers.get_forecast_ensemble_bc_data_csv'
-            ),
-        )
-
-        return url_maps
 
     def custom_settings(self):
         return (

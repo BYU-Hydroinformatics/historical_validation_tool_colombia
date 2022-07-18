@@ -53,6 +53,7 @@
 
 #obsgraph {
     height: 100%;
+    width: 85%;
 }
 
 #obsgraph .modal-body {
@@ -96,12 +97,14 @@
 
 #graph .modal-dialog {
   width: 75%;
+  max-width: 800px;
   height: 75%;
   padding: 0;
 }
 
 #obsgraph .modal-dialog {
   width: 75%;
+  max-width: 800px;
   height: 75%;
   padding: 0;
 }
