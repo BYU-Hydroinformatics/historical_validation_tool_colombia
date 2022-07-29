@@ -570,7 +570,7 @@ def get_scatterPlot(request, app_workspace):
     url='get-scatterPlotLogScale',
     app_workspace=True
 )
-def get_scatterPlotLogScale(request):
+def get_scatterPlotLogScale(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
     Get historic simulations from ERA Interim
@@ -666,7 +666,7 @@ def get_scatterPlotLogScale(request):
     url='get-volumeAnalysis',
     app_workspace=True,
 )
-def get_volumeAnalysis(request):
+def get_volumeAnalysis(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
     Get historic simulations from ERA Interim
@@ -1841,7 +1841,7 @@ def get_simulated_bc_discharge_csv(request, app_workspace):
     url='get-forecast-data-csv',
     app_workspace=True,
 )
-def get_forecast_data_csv(request):
+def get_forecast_data_csv(request, app_workspace):
     """""
     Returns Forecast data as csv
     """""
