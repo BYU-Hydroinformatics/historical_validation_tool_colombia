@@ -19,8 +19,8 @@ class HistoricalValidationToolColombia(TethysAppBase):
 
     def spatial_dataset_service_settings(self):
         """
-		Spatial_dataset_service_settings method.
-		"""
+        Spatial_dataset_service_settings method.
+        """
         return (
             SpatialDatasetServiceSetting(
                 name='main_geoserver',
