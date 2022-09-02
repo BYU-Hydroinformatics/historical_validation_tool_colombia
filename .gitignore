@@ -8,3 +8,6 @@
 *.sqlite
 *.DS_Store
 .idea/
+*.vscode
+tethysapp/*/workspaces/app_workspace/*
+tethysapp/*/workspaces/user_workspace/*
