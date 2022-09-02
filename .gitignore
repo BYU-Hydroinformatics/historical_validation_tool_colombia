@@ -10,3 +10,4 @@
 .idea/
 *.vscode
 tethysapp/*/workspaces/*
+!tethysapp/*/workspaces/*/.gitkeep
