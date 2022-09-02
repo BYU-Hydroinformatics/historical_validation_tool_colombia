@@ -11,4 +11,3 @@
 *.vscode
 tethysapp/*/workspaces/app_workspace/*
 tethysapp/*/workspaces/user_workspace/*
-!tethysapp/*/workspaces/*/.gitkeep
