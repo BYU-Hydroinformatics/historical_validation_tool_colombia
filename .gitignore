@@ -8,4 +8,5 @@
 *.sqlite
 *.DS_Store
 .idea/
-.vscode/settings.json
+*.vscode
+tethysapp/*/workspaces/*

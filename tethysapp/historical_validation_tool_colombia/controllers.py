@@ -1,7 +1,5 @@
 import datetime as dt
 import io
-import traceback
-from csv import writer as csv_writer
 
 import geoglows
 import math
@@ -20,7 +18,7 @@ from HydroErr.HydroErr import metric_names, metric_abbr
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from scipy import integrate
-from tethys_sdk.gizmos import *
+from tethys_sdk.gizmos import SelectInput, TextInput, DatePicker, PlotlyView
 from tethys_sdk.routing import controller
 
 import time
@@ -28,10 +26,7 @@ from hs_restclient import HydroShare, HydroShareAuthBasic
 from .app import HistoricalValidationToolColombia as app
 
 
-@controller(
-    name='home',
-    url='historical-validation-tool-colombia',
-)
+@controller(name='home', url='historical-validation-tool-colombia')
 def home(request):
     """
     Controller for the app home page.
@@ -44,8 +39,6 @@ def home(request):
     geoserver_engine = app.get_spatial_dataset_service(
         name='main_geoserver', as_engine=True)
 
-    geos_username = geoserver_engine.username
-    geos_password = geoserver_engine.password
     my_geoserver = geoserver_engine.endpoint.replace('rest', '')
 
     geoserver_base_url = my_geoserver
@@ -105,11 +98,8 @@ def home(request):
 
     return render(request, 'historical_validation_tool_colombia/home.html', context)
 
-@controller(
-    name='get_popup_response',
-    url='get-request-data',
-    app_workspace=True,
-)
+
+@controller(name='get_popup_response', url='get-request-data', app_workspace=True)
 def get_popup_response(request, app_workspace):
     """
     get station attributes
@@ -131,24 +121,22 @@ def get_popup_response(request, app_workspace):
     f4 = open(forecast_data_path_file, 'w')
     f4.close()
 
-    return_obj = {}
-
     try:
         get_data = request.GET
-        #get station attributes
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
+        # get station attributes
         comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
-        auth = HydroShareAuthBasic(username=app.get_custom_setting('username'), password=app.get_custom_setting('password'))
+        auth = HydroShareAuthBasic(
+            username=app.get_custom_setting('username'),
+            password=app.get_custom_setting('password')
+        )
         hs = HydroShare(auth=auth)
         resource_id = app.get_custom_setting('hydroshare_resource_id')
         hs.setAccessRules(resource_id, public=True)
 
-        url = 'https://www.hydroshare.org/resource/{0}/data/contents/Discharge_Data/{1}.csv'.format(resource_id, codEstacion)
+        url = f'https://www.hydroshare.org/resource/{resource_id}/data/contents/Discharge_Data/{codEstacion}.csv'
         s = requests.get(url, verify=False).content
         df = pd.read_csv(io.StringIO(s.decode('utf-8')), index_col=0)
         df.index = pd.to_datetime(df.index)
@@ -177,7 +165,8 @@ def get_popup_response(request, app_workspace):
         simulated_df.index = pd.to_datetime(simulated_df.index)
         simulated_df.index = simulated_df.index.to_series().dt.strftime("%Y-%m-%d")
         simulated_df.index = pd.to_datetime(simulated_df.index)
-        simulated_df = pd.DataFrame(data=simulated_df.iloc[:, 0].values, index=simulated_df.index, columns=['Simulated Streamflow'])
+        simulated_df = pd.DataFrame(data=simulated_df.iloc[:, 0].values, index=simulated_df.index,
+                                    columns=['Simulated Streamflow'])
 
         simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
         simulated_df.reset_index(level=0, inplace=True)
@@ -193,9 +182,8 @@ def get_popup_response(request, app_workspace):
 
         return JsonResponse({})
 
-
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _, __, exc_tb = sys.exc_info()
         print("error: " + str(e))
         print("line: " + str(exc_tb.tb_lineno))
         return JsonResponse({
@@ -203,11 +191,7 @@ def get_popup_response(request, app_workspace):
         })
 
 
-@controller(
-    name='get_hydrographs',
-    url='get-hydrographs',
-    app_workspace=True
-)
+@controller(name='get_hydrographs', url='get-hydrographs', app_workspace=True)
 def get_hydrographs(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -219,15 +203,12 @@ def get_hydrographs(request, app_workspace):
     try:
 
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -276,11 +257,7 @@ def get_hydrographs(request, app_workspace):
         })
 
 
-@controller(
-    name='get_dailyAverages',
-    url='get-dailyAverages',
-    app_workspace=True
-)
+@controller(name='get_dailyAverages', url='get-dailyAverages', app_workspace=True)
 def get_dailyAverages(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -291,15 +268,12 @@ def get_dailyAverages(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -311,7 +285,7 @@ def get_dailyAverages(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -349,9 +323,8 @@ def get_dailyAverages(request, app_workspace):
 
         return render(request, 'historical_validation_tool_colombia/gizmo_ajax.html', context)
 
-
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
+        _, __, exc_tb = sys.exc_info()
         print("error: " + str(e))
         print("line: " + str(exc_tb.tb_lineno))
         return JsonResponse({
@@ -359,11 +332,7 @@ def get_dailyAverages(request, app_workspace):
         })
 
 
-@controller(
-    name='get_monthlyAverages',
-    url='get-monthlyAverages',
-    app_workspace=True,
-)
+@controller(name='get_monthlyAverages', url='get-monthlyAverages', app_workspace=True)
 def get_monthlyAverages(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -374,15 +343,12 @@ def get_monthlyAverages(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -394,7 +360,7 @@ def get_monthlyAverages(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -442,11 +408,7 @@ def get_monthlyAverages(request, app_workspace):
         })
 
 
-@controller(
-    name='get_scatterPlot',
-    url='get-scatterPlot',
-    app_workspace=True
-)
+@controller(name='get_scatterPlot', url='get-scatterPlot', app_workspace=True)
 def get_scatterPlot(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -457,15 +419,12 @@ def get_scatterPlot(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -477,7 +436,7 @@ def get_scatterPlot(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -507,9 +466,6 @@ def get_scatterPlot(request, app_workspace):
 
         min_value = min(min(merged_df.iloc[:, 1].values), min(merged_df.iloc[:, 0].values))
         max_value = max(max(merged_df.iloc[:, 1].values), max(merged_df.iloc[:, 0].values))
-
-        min_value2 = min(min(merged_df2.iloc[:, 1].values), min(merged_df2.iloc[:, 0].values))
-        max_value2 = max(max(merged_df2.iloc[:, 1].values), max(merged_df2.iloc[:, 0].values))
 
         line_45 = go.Scatter(
             x=[min_value, max_value],
@@ -565,11 +521,7 @@ def get_scatterPlot(request, app_workspace):
         })
 
 
-@controller(
-    name='get_scatterPlotLogScale',
-    url='get-scatterPlotLogScale',
-    app_workspace=True
-)
+@controller(name='get_scatterPlotLogScale', url='get-scatterPlotLogScale', app_workspace=True)
 def get_scatterPlotLogScale(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -580,15 +532,12 @@ def get_scatterPlotLogScale(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -600,7 +549,7 @@ def get_scatterPlotLogScale(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -661,11 +610,8 @@ def get_scatterPlotLogScale(request, app_workspace):
             'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
         })
 
-@controller(
-    name='get_volumeAnalysis',
-    url='get-volumeAnalysis',
-    app_workspace=True,
-)
+
+@controller(name='get_volumeAnalysis', url='get-volumeAnalysis', app_workspace=True)
 def get_volumeAnalysis(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -676,15 +622,12 @@ def get_volumeAnalysis(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -696,7 +639,7 @@ def get_volumeAnalysis(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -765,11 +708,7 @@ def get_volumeAnalysis(request, app_workspace):
         })
 
 
-@controller(
-    name='volume_table_ajax',
-    url='volume-table-ajax',
-    app_workspace=True,
-)
+@controller(name='volume_table_ajax', url='volume-table-ajax', app_workspace=True)
 def volume_table_ajax(request, app_workspace):
     """Calculates the volumes of the simulated and
     observed streamflow"""
@@ -777,13 +716,6 @@ def volume_table_ajax(request, app_workspace):
     start_time = time.time()
 
     try:
-        get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
-        codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
-
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
         observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
@@ -837,22 +769,13 @@ def volume_table_ajax(request, app_workspace):
         })
 
 
-@controller(
-    name='make_table_ajax',
-    url='make-table-ajax',
-    app_workspace=True,
-)
+@controller(name='make_table_ajax', url='make-table-ajax', app_workspace=True)
 def make_table_ajax(request, app_workspace):
 
     start_time = time.time()
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
-        codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
 
         # Indexing the metrics to get the abbreviations
         selected_metric_abbr = get_data.getlist("metrics[]", None)
@@ -919,7 +842,7 @@ def make_table_ajax(request, app_workspace):
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
-        observed_df = pd.read_json(observed_data_file_path,convert_dates=True)
+        observed_df = pd.read_json(observed_data_file_path, convert_dates=True)
         observed_df.index = pd.to_datetime(observed_df.index, unit='ms')
         observed_df.sort_index(inplace=True, ascending=True)
 
@@ -931,7 +854,7 @@ def make_table_ajax(request, app_workspace):
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
-        corrected_df = pd.read_json(corrected_data_file_path,convert_dates=True)
+        corrected_df = pd.read_json(corrected_data_file_path, convert_dates=True)
         corrected_df.index = pd.to_datetime(corrected_df.index)
         corrected_df.sort_index(inplace=True, ascending=True)
 
@@ -943,19 +866,16 @@ def make_table_ajax(request, app_workspace):
 
         # Creating the Table Based on User Input
         table = hs.make_table(
-            merged_dataframe = merged_df,
-            metrics = selected_metric_abbr,
-            # remove_neg=remove_neg,
-            # remove_zero=remove_zero,
-            mase_m =  extra_param_dict['mase_m'],
-            dmod_j = extra_param_dict['dmod_j'],
-            nse_mod_j = extra_param_dict['nse_mod_j'],
-            h6_mhe_k = extra_param_dict['h6_mhe_k'],
-            h6_ahe_k = extra_param_dict['h6_ahe_k'],
-            h6_rmshe_k= extra_param_dict['h6_rmshe_k'],
-            d1_p_obs_bar_p= extra_param_dict['d1_p_x_bar_p'],
-            lm_x_obs_bar_p= extra_param_dict['lm_x_bar_p'],
-            # seasonal_periods=all_date_range_list
+            merged_dataframe=merged_df,
+            metrics=selected_metric_abbr,
+            mase_m=extra_param_dict['mase_m'],
+            dmod_j=extra_param_dict['dmod_j'],
+            nse_mod_j=extra_param_dict['nse_mod_j'],
+            h6_mhe_k=extra_param_dict['h6_mhe_k'],
+            h6_ahe_k=extra_param_dict['h6_ahe_k'],
+            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
+            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
+            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p']
         )
         table = table.round(decimals=2)
         table_html = table.transpose()
@@ -963,19 +883,16 @@ def make_table_ajax(request, app_workspace):
 
         # Creating the Table Based on User Input
         table2 = hs.make_table(
-            merged_dataframe = merged_df2,
-            metrics= selected_metric_abbr,
-            # remove_neg=remove_neg,
-            # remove_zero=remove_zero,
-            mase_m= extra_param_dict['mase_m'],
-            dmod_j= extra_param_dict['dmod_j'],
-            nse_mod_j= extra_param_dict['nse_mod_j'],
-            h6_mhe_k= extra_param_dict['h6_mhe_k'],
-            h6_ahe_k= extra_param_dict['h6_ahe_k'],
-            h6_rmshe_k= extra_param_dict['h6_rmshe_k'],
-            d1_p_obs_bar_p= extra_param_dict['d1_p_x_bar_p'],
-            lm_x_obs_bar_p= extra_param_dict['lm_x_bar_p'],
-            # seasonal_periods=all_date_range_list
+            merged_dataframe=merged_df2,
+            metrics=selected_metric_abbr,
+            mase_m=extra_param_dict['mase_m'],
+            dmod_j=extra_param_dict['dmod_j'],
+            nse_mod_j=extra_param_dict['nse_mod_j'],
+            h6_mhe_k=extra_param_dict['h6_mhe_k'],
+            h6_ahe_k=extra_param_dict['h6_ahe_k'],
+            h6_rmshe_k=extra_param_dict['h6_rmshe_k'],
+            d1_p_obs_bar_p=extra_param_dict['d1_p_x_bar_p'],
+            lm_x_obs_bar_p=extra_param_dict['lm_x_bar_p']
         )
         table2 = table2.round(decimals=2)
         table_html2 = table2.transpose()
@@ -1014,19 +931,13 @@ def get_units_title(unit_type):
     return units_title
 
 
-@controller(
-    name='get-time-series',
-    url='get-time-series',
-    app_workspace=True,
-)
+@controller(name='get-time-series', url='get-time-series', app_workspace=True)
 def get_time_series(request, app_workspace):
 
     start_time = time.time()
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
         comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
@@ -1034,9 +945,15 @@ def get_time_series(request, app_workspace):
 
         '''Getting Forecast Stats'''
         if startdate != '':
-            res = requests.get('https://geoglows.ecmwf.int/api/ForecastStats/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv', verify=False).content
+            res = requests.get(
+                f'https://geoglows.ecmwf.int/api/ForecastStats/?reach_id={comid}&date={startdate}&return_format=csv',
+                verify=False
+            ).content
         else:
-            res = requests.get('https://geoglows.ecmwf.int/api/ForecastStats/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            res = requests.get(
+                f'https://geoglows.ecmwf.int/api/ForecastStats/?reach_id={comid}&return_format=csv',
+                verify=False
+            ).content
 
         '''Get Forecasts'''
         forecast_df = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -1049,9 +966,13 @@ def get_time_series(request, app_workspace):
         forecast_df.index.name = 'Datetime'
         forecast_df.to_json(forecast_data_file_path)
 
-        hydroviewer_figure = geoglows.plots.forecast_stats(stats=forecast_df, titles={'Station': nomEstacion + '-' + str(codEstacion), 'Reach ID': comid})
+        hydroviewer_figure = geoglows.plots.forecast_stats(
+            stats=forecast_df,
+            titles={'Station': nomEstacion + '-' + str(codEstacion), 'Reach ID': comid}
+        )
 
-        x_vals = (forecast_df.index[0], forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[0])
+        x_vals = (forecast_df.index[0], forecast_df.index[len(forecast_df.index) - 1],
+                  forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[0])
         max_visible = max(forecast_df.max())
 
         '''Getting forecast record'''
@@ -1075,7 +996,8 @@ def get_time_series(request, app_workspace):
                 )
             ))
 
-            x_vals = (record_plot.index[0], forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[len(forecast_df.index) - 1], record_plot.index[0])
+            x_vals = (record_plot.index[0], forecast_df.index[len(forecast_df.index) - 1],
+                      forecast_df.index[len(forecast_df.index) - 1], record_plot.index[0])
             max_visible = max(record_plot.max().values[0], max_visible)
 
         '''Getting real time observed data'''
@@ -1133,14 +1055,14 @@ def get_time_series(request, app_workspace):
                 observed_rt = pd.DataFrame(pairs, columns=['Datetime', 'Observed (m3/s)'])
                 observed_rt.set_index('Datetime', inplace=True)
                 observed_rt = observed_rt.dropna()
-                #observed_rt = observed_rt.groupby(observed_rt.index.strftime("%Y/%m/%d")).mean()
+                # observed_rt = observed_rt.groupby(observed_rt.index.strftime("%Y/%m/%d")).mean()
                 observed_rt.index = pd.to_datetime(observed_rt.index)
-                #observed_rt.index = observed_rt.index.tz_localize('UTC')
+                # observed_rt.index = observed_rt.index.tz_localize('UTC')
                 observed_rt = observed_rt.dropna()
 
                 observed_rt_plot = observed_rt.copy()
-                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index >= pd.to_datetime(forecast_df.index[0] - dt.timedelta(days=8))]
-                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index <= pd.to_datetime(forecast_df.index[0] + dt.timedelta(days=2))]
+                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index >= pd.to_datetime(forecast_df.index[0] - dt.timedelta(days=8))]  # noqa: E501
+                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index <= pd.to_datetime(forecast_df.index[0] + dt.timedelta(days=2))]  # noqa: E501
 
                 if len(observed_rt_plot.index) > 0:
                     hydroviewer_figure.add_trace(go.Scatter(
@@ -1152,7 +1074,6 @@ def get_time_series(request, app_workspace):
                         )
                     ))
 
-                    #x_vals = (observed_rt_plot.index[0], forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[len(forecast_df.index) - 1], observed_rt_plot.index[0])
                     max_visible = max(observed_rt_plot.max().values[0], max_visible)
 
             except Exception as e:
@@ -1164,14 +1085,14 @@ def get_time_series(request, app_workspace):
                 sensor_rt = pd.DataFrame(pairs, columns=['Datetime', 'Sensor (m3/s)'])
                 sensor_rt.set_index('Datetime', inplace=True)
                 sensor_rt = sensor_rt.dropna()
-                #sensor_rt = sensor_rt.groupby(sensor_rt.index.strftime("%Y/%m/%d")).mean()
+                # sensor_rt = sensor_rt.groupby(sensor_rt.index.strftime("%Y/%m/%d")).mean()
                 sensor_rt.index = pd.to_datetime(sensor_rt.index)
-                #sensor_rt.index = sensor_rt.index.tz_localize('UTC')
+                # sensor_rt.index = sensor_rt.index.tz_localize('UTC')
                 sensor_rt = sensor_rt.dropna()
 
                 sensor_rt_plot = sensor_rt.copy()
-                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index >= pd.to_datetime(forecast_df.index[0] - dt.timedelta(days=8))]
-                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index <= pd.to_datetime(forecast_df.index[0] + dt.timedelta(days=2))]
+                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index >= pd.to_datetime(forecast_df.index[0] - dt.timedelta(days=8))]  # noqa: E501
+                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index <= pd.to_datetime(forecast_df.index[0] + dt.timedelta(days=2))]  # noqa: E501
 
                 if len(sensor_rt_plot.index) > 0:
                     hydroviewer_figure.add_trace(go.Scatter(
@@ -1183,7 +1104,6 @@ def get_time_series(request, app_workspace):
                         )
                     ))
 
-                    #x_vals = (sensor_rt_plot.index[0], forecast_df.index[len(forecast_df.index) - 1], forecast_df.index[len(forecast_df.index) - 1], sensor_rt_plot.index[0])
                     max_visible = max(sensor_rt_plot.max().values[0], max_visible)
 
             except Exception as e:
@@ -1233,14 +1153,19 @@ def get_time_series(request, app_workspace):
             r50 = int(rperiods.iloc[0]['return_period_50'])
             r100 = int(rperiods.iloc[0]['return_period_100'])
 
-            hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
+            hydroviewer_figure.add_trace(template(
+                'Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'
+            ))
             hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
             hydroviewer_figure.add_trace(template(f'5 Year: {r5}', (r5, r5, r10, r10), colors['5 Year']))
             hydroviewer_figure.add_trace(template(f'10 Year: {r10}', (r10, r10, r25, r25), colors['10 Year']))
             hydroviewer_figure.add_trace(template(f'25 Year: {r25}', (r25, r25, r50, r50), colors['25 Year']))
             hydroviewer_figure.add_trace(template(f'50 Year: {r50}', (r50, r50, r100, r100), colors['50 Year']))
-            hydroviewer_figure.add_trace(template(f'100 Year: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)),colors['100 Year']))
-
+            hydroviewer_figure.add_trace(template(
+                f'100 Year: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible),
+                                      max(r100 + r100 * 0.05, max_visible)),
+                colors['100 Year']
+            ))
 
         except Exception as e:
             print(str(e))
@@ -1264,11 +1189,7 @@ def get_time_series(request, app_workspace):
         })
 
 
-@controller(
-    name='get-time-series-bc',
-    url='get-time-series-bc',
-    app_workspace=True,
-)
+@controller(name='get-time-series-bc', url='get-time-series-bc', app_workspace=True)
 def get_time_series_bc(request, app_workspace):
 
     start_time = time.time()
@@ -1276,8 +1197,6 @@ def get_time_series_bc(request, app_workspace):
     try:
 
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
         comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
         nomEstacion = get_data['stationname']
@@ -1303,9 +1222,9 @@ def get_time_series_bc(request, app_workspace):
 
         '''Getting Forecast Stats'''
         if startdate != '':
-            res = requests.get('https://geoglows.ecmwf.int/api/ForecastEnsembles/?reach_id=' + comid + '&date=' + startdate + '&return_format=csv', verify=False).content
+            res = requests.get(f'https://geoglows.ecmwf.int/api/ForecastEnsembles/?reach_id={comid}&date={startdate}&return_format=csv', verify=False).content  # noqa: E501
         else:
-            res = requests.get('https://geoglows.ecmwf.int/api/ForecastEnsembles/?reach_id=' + comid + '&return_format=csv', verify=False).content
+            res = requests.get(f'https://geoglows.ecmwf.int/api/ForecastEnsembles/?reach_id={comid}&return_format=csv', verify=False).content  # noqa: E501
 
         '''Get Forecasts'''
         forecast_ens = pd.read_csv(io.StringIO(res.decode('utf-8')), index_col=0)
@@ -1326,7 +1245,6 @@ def get_time_series_bc(request, app_workspace):
 
         '''Correct Bias Forecasts'''
         monthly_simulated = simulated_df[simulated_df.index.month == (forecast_ens.index[0]).month].dropna()
-        monthly_observed = observed_df[observed_df.index.month == (forecast_ens.index[0]).month].dropna()
 
         min_simulated = np.min(monthly_simulated.iloc[:, 0].to_list())
         max_simulated = np.max(monthly_simulated.iloc[:, 0].to_list())
@@ -1343,13 +1261,13 @@ def get_time_series_bc(request, app_workspace):
             min_index_value = min_factor[min_factor[column] != 1].index.tolist()
 
             for element in min_index_value:
-                min_factor[column].loc[min_factor.index == element] = tmp[column].loc[tmp.index == element] / min_simulated
+                min_factor[column].loc[min_factor.index == element] = tmp[column].loc[tmp.index == element] / min_simulated  # noqa: E501
 
             max_factor.loc[max_factor[column] <= max_simulated, column] = 1
             max_index_value = max_factor[max_factor[column] != 1].index.tolist()
 
             for element in max_index_value:
-                max_factor[column].loc[max_factor.index == element] = tmp[column].loc[tmp.index == element] / max_simulated
+                max_factor[column].loc[max_factor.index == element] = tmp[column].loc[tmp.index == element] / max_simulated  # noqa: E501
 
             tmp.loc[tmp[column] <= min_simulated, column] = min_simulated
             tmp.loc[tmp[column] >= max_simulated, column] = max_simulated
@@ -1394,9 +1312,13 @@ def get_time_series_bc(request, app_workspace):
         fixed_stats.index.name = 'Datetime'
         fixed_stats.to_json(forecast_data_bc_file_path)
 
-        hydroviewer_figure = geoglows.plots.forecast_stats(stats=fixed_stats, titles={'Station': nomEstacion + '-' + str(codEstacion), 'Reach ID': comid, 'bias_corrected': True})
+        hydroviewer_figure = geoglows.plots.forecast_stats(
+            stats=fixed_stats,
+            titles={'Station': nomEstacion + '-' + str(codEstacion), 'Reach ID': comid, 'bias_corrected': True}
+        )
 
-        x_vals = (fixed_stats.index[0], fixed_stats.index[len(fixed_stats.index) - 1], fixed_stats.index[len(fixed_stats.index) - 1], fixed_stats.index[0])
+        x_vals = (fixed_stats.index[0], fixed_stats.index[len(fixed_stats.index) - 1],
+                  fixed_stats.index[len(fixed_stats.index) - 1], fixed_stats.index[0])
         max_visible = max(fixed_stats.max())
 
         '''Correct Bias Forecasts Records'''
@@ -1415,7 +1337,6 @@ def get_time_series_bc(request, app_workspace):
             values = forecast_record.loc[forecast_record.index.month == mes]
 
             monthly_simulated = simulated_df[simulated_df.index.month == mes].dropna()
-            monthly_observed = observed_df[observed_df.index.month == mes].dropna()
 
             min_simulated = np.min(monthly_simulated.iloc[:, 0].to_list())
             max_simulated = np.max(monthly_simulated.iloc[:, 0].to_list())
@@ -1432,19 +1353,25 @@ def get_time_series_bc(request, app_workspace):
             min_index_value = min_factor[min_factor[column_records] != 1].index.tolist()
 
             for element in min_index_value:
-                min_factor[column_records].loc[min_factor.index == element] = tmp[column_records].loc[tmp.index == element] / min_simulated
+                min_factor[column_records].loc[min_factor.index == element] = tmp[column_records].loc[tmp.index == element] / min_simulated  # noqa: E501
 
             max_factor.loc[max_factor[column_records] <= max_simulated, column_records] = 1
             max_index_value = max_factor[max_factor[column_records] != 1].index.tolist()
 
             for element in max_index_value:
-                max_factor[column_records].loc[max_factor.index == element] = tmp[column_records].loc[tmp.index == element] / max_simulated
+                max_factor[column_records].loc[max_factor.index == element] = tmp[column_records].loc[tmp.index == element] / max_simulated  # noqa: E501
 
             tmp.loc[tmp[column_records] <= min_simulated, column_records] = min_simulated
             tmp.loc[tmp[column_records] >= max_simulated, column_records] = max_simulated
             fixed_records_df.update(pd.DataFrame(tmp[column_records].values, index=tmp.index, columns=[column_records]))
-            min_factor_records_df.update(pd.DataFrame(min_factor[column_records].values, index=min_factor.index, columns=[column_records]))
-            max_factor_records_df.update(pd.DataFrame(max_factor[column_records].values, index=max_factor.index, columns=[column_records]))
+            min_factor_records_df.update(pd.DataFrame(
+                min_factor[column_records].values,
+                index=min_factor.index, columns=[column_records]
+            ))
+            max_factor_records_df.update(pd.DataFrame(
+                max_factor[column_records].values,
+                index=max_factor.index, columns=[column_records]
+            ))
 
             corrected_values = geoglows.bias.correct_forecast(fixed_records_df, simulated_df, observed_df)
             corrected_values = corrected_values.multiply(min_factor_records_df, axis=0)
@@ -1467,7 +1394,8 @@ def get_time_series_bc(request, app_workspace):
                 )
             ))
 
-            x_vals = (record_plot.index[0], fixed_stats.index[len(fixed_stats.index) - 1], fixed_stats.index[len(fixed_stats.index) - 1], record_plot.index[0])
+            x_vals = (record_plot.index[0], fixed_stats.index[len(fixed_stats.index) - 1],
+                      fixed_stats.index[len(fixed_stats.index) - 1], record_plot.index[0])
             max_visible = max(record_plot.max().values[0], max_visible)
 
         '''Getting real time observed data'''
@@ -1525,14 +1453,14 @@ def get_time_series_bc(request, app_workspace):
                 observed_rt = pd.DataFrame(pairs, columns=['Datetime', 'Observed (m3/s)'])
                 observed_rt.set_index('Datetime', inplace=True)
                 observed_rt = observed_rt.dropna()
-                #observed_rt = observed_rt.groupby(observed_rt.index.strftime("%Y/%m/%d")).mean()
+                # observed_rt = observed_rt.groupby(observed_rt.index.strftime("%Y/%m/%d")).mean()
                 observed_rt.index = pd.to_datetime(observed_rt.index)
-                #observed_rt.index = observed_rt.index.tz_localize('UTC')
+                # observed_rt.index = observed_rt.index.tz_localize('UTC')
                 observed_rt = observed_rt.dropna()
 
                 observed_rt_plot = observed_rt.copy()
-                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index >= pd.to_datetime(forecast_ens.index[0] - dt.timedelta(days=8))]
-                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index <= pd.to_datetime(forecast_ens.index[0] + dt.timedelta(days=2))]
+                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index >= pd.to_datetime(forecast_ens.index[0] - dt.timedelta(days=8))]  # noqa: E501
+                observed_rt_plot = observed_rt_plot.loc[observed_rt_plot.index <= pd.to_datetime(forecast_ens.index[0] + dt.timedelta(days=2))]  # noqa: E501
 
                 if len(observed_rt_plot.index) > 0:
                     hydroviewer_figure.add_trace(go.Scatter(
@@ -1544,7 +1472,8 @@ def get_time_series_bc(request, app_workspace):
                         )
                     ))
 
-                    x_vals = (observed_rt_plot.index[0], forecast_ens.index[len(forecast_ens.index) - 1], forecast_ens.index[len(forecast_ens.index) - 1], observed_rt_plot.index[0])
+                    x_vals = (observed_rt_plot.index[0], forecast_ens.index[len(forecast_ens.index) - 1],
+                              forecast_ens.index[len(forecast_ens.index) - 1], observed_rt_plot.index[0])
                     max_visible = max(observed_rt_plot.max().values[0], max_visible)
 
             except Exception as e:
@@ -1556,14 +1485,14 @@ def get_time_series_bc(request, app_workspace):
                 sensor_rt = pd.DataFrame(pairs, columns=['Datetime', 'Sensor (m3/s)'])
                 sensor_rt.set_index('Datetime', inplace=True)
                 sensor_rt = sensor_rt.dropna()
-                #sensor_rt = sensor_rt.groupby(sensor_rt.index.strftime("%Y/%m/%d")).mean()
+                # sensor_rt = sensor_rt.groupby(sensor_rt.index.strftime("%Y/%m/%d")).mean()
                 sensor_rt.index = pd.to_datetime(sensor_rt.index)
-                #sensor_rt.index = sensor_rt.index.tz_localize('UTC')
+                # sensor_rt.index = sensor_rt.index.tz_localize('UTC')
                 sensor_rt = sensor_rt.dropna()
 
                 sensor_rt_plot = sensor_rt.copy()
-                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index >= pd.to_datetime(forecast_ens.index[0] - dt.timedelta(days=8))]
-                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index <= pd.to_datetime(forecast_ens.index[0] + dt.timedelta(days=2))]
+                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index >= pd.to_datetime(forecast_ens.index[0] - dt.timedelta(days=8))]  # noqa: E501
+                sensor_rt_plot = sensor_rt_plot.loc[sensor_rt_plot.index <= pd.to_datetime(forecast_ens.index[0] + dt.timedelta(days=2))]  # noqa: E501
 
                 if len(sensor_rt_plot.index) > 0:
                     hydroviewer_figure.add_trace(go.Scatter(
@@ -1575,7 +1504,8 @@ def get_time_series_bc(request, app_workspace):
                         )
                     ))
 
-                    x_vals = (sensor_rt_plot.index[0], forecast_ens.index[len(forecast_ens.index) - 1], forecast_ens.index[len(forecast_ens.index) - 1], sensor_rt_plot.index[0])
+                    x_vals = (sensor_rt_plot.index[0], forecast_ens.index[len(forecast_ens.index) - 1],
+                              forecast_ens.index[len(forecast_ens.index) - 1], sensor_rt_plot.index[0])
                     max_visible = max(sensor_rt_plot.max().values[0], max_visible)
 
             except Exception as e:
@@ -1583,8 +1513,8 @@ def get_time_series_bc(request, app_workspace):
 
         '''Getting Corrected Return Periods'''
         max_annual_flow = corrected_df.groupby(corrected_df.index.strftime("%Y")).max()
-        mean_value = np.mean(max_annual_flow.iloc[:,0].values)
-        std_value = np.std(max_annual_flow.iloc[:,0].values)
+        mean_value = np.mean(max_annual_flow.iloc[:, 0].values)
+        std_value = np.std(max_annual_flow.iloc[:, 0].values)
 
         return_periods = [100, 50, 25, 10, 5, 2]
 
@@ -1598,7 +1528,7 @@ def get_time_series_bc(request, app_workspace):
                 rp (int or float): the return period in years
             Returns:
                 float, the flow corresponding to the return period specified
-            """
+            """  # noqa: E501
             # xbar = statistics.mean(year_max_flow_list)
             # std = statistics.stdev(year_max_flow_list, xbar=xbar)
             return -math.log(-math.log(1 - (1 / rp))) * std * .7797 + xbar - (.45 * std)
@@ -1608,7 +1538,16 @@ def get_time_series_bc(request, app_workspace):
         for rp in return_periods:
             return_periods_values.append(gumbel_1(std_value, mean_value, rp))
 
-        d = {'rivid': [comid], 'return_period_100': [return_periods_values[0]], 'return_period_50': [return_periods_values[1]], 'return_period_25': [return_periods_values[2]], 'return_period_10': [return_periods_values[3]], 'return_period_5': [return_periods_values[4]], 'return_period_2': [return_periods_values[5]]}
+        d = {
+            'rivid': [comid],
+            'return_period_100': [return_periods_values[0]],
+            'return_period_50': [return_periods_values[1]],
+            'return_period_25': [return_periods_values[2]],
+            'return_period_10': [return_periods_values[3]],
+            'return_period_5': [return_periods_values[4]],
+            'return_period_2': [return_periods_values[5]]
+        }
+
         rperiods = pd.DataFrame(data=d)
         rperiods.set_index('rivid', inplace=True)
 
@@ -1651,13 +1590,18 @@ def get_time_series_bc(request, app_workspace):
         r50 = int(rperiods.iloc[0]['return_period_50'])
         r100 = int(rperiods.iloc[0]['return_period_100'])
 
-        hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
+        hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05),
+                                              'rgba(0,0,0,0)', fill='none'))
         hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
         hydroviewer_figure.add_trace(template(f'5 Year: {r5}', (r5, r5, r10, r10), colors['5 Year']))
         hydroviewer_figure.add_trace(template(f'10 Year: {r10}', (r10, r10, r25, r25), colors['10 Year']))
         hydroviewer_figure.add_trace(template(f'25 Year: {r25}', (r25, r25, r50, r50), colors['25 Year']))
         hydroviewer_figure.add_trace(template(f'50 Year: {r50}', (r50, r50, r100, r100), colors['50 Year']))
-        hydroviewer_figure.add_trace(template(f'100 Year: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year']))
+        hydroviewer_figure.add_trace(template(
+            f'100 Year: {r100}',
+            (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)),
+            colors['100 Year']
+        ))
 
         chart_obj = PlotlyView(hydroviewer_figure)
 
@@ -1669,7 +1613,6 @@ def get_time_series_bc(request, app_workspace):
 
         return render(request, 'historical_validation_tool_colombia/gizmo_ajax.html', context)
 
-
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         print("error: " + str(e))
@@ -1679,10 +1622,7 @@ def get_time_series_bc(request, app_workspace):
         })
 
 
-@controller(
-    name='get-available-dates',
-    url='ecmwf-rapid/get-available-dates',
-)
+@controller(name='get-available-dates', url='ecmwf-rapid/get-available-dates')
 def get_available_dates(request):
 
     get_data = request.GET
@@ -1690,7 +1630,7 @@ def get_available_dates(request):
     subbasin = get_data['subbasin']
     comid = get_data['streamcomid']
 
-    res = requests.get('https://geoglows.ecmwf.int/api/AvailableDates/?region=' + watershed + '-' + subbasin, verify=False)
+    res = requests.get(f'https://geoglows.ecmwf.int/api/AvailableDates/?region={watershed}-{subbasin}', verify=False)
 
     data = res.json()
 
@@ -1716,11 +1656,7 @@ def get_available_dates(request):
     })
 
 
-@controller(
-    name='get_observed_discharge_csv',
-    url='get-observed-discharge-csv',
-    app_workspace=True,
-)
+@controller(name='get_observed_discharge_csv', url='get-observed-discharge-csv', app_workspace=True)
 def get_observed_discharge_csv(request, app_workspace):
     """
     Get observed data from csv files in Hydroshare
@@ -1728,11 +1664,7 @@ def get_observed_discharge_csv(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
 
         '''Get Observed Data'''
         observed_data_file_path = os.path.join(app_workspace.path, 'observed_data.json')
@@ -1754,12 +1686,9 @@ def get_observed_discharge_csv(request, app_workspace):
         return JsonResponse({
             'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
         })
-  
-@controller(
-    name='get_simulated_discharge_csv',
-    url='get-simulated-discharge-csv',
-    app_workspace=True,
-)
+
+
+@controller(name='get_simulated_discharge_csv', url='get-simulated-discharge-csv', app_workspace=True)
 def get_simulated_discharge_csv(request, app_workspace):
     """
     Get historic simulations from ERA Interim
@@ -1767,11 +1696,7 @@ def get_simulated_discharge_csv(request, app_workspace):
 
     try:
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
 
         '''Get Simulated Data'''
         simulated_data_file_path = os.path.join(app_workspace.path, 'simulated_data.json')
@@ -1795,11 +1720,7 @@ def get_simulated_discharge_csv(request, app_workspace):
         })
 
 
-@controller(
-    name='get_simulated_bc_discharge_csv',
-    url='get-simulated-bc-discharge-csv',
-    app_workspace=True,
-)
+@controller(name='get_simulated_bc_discharge_csv', url='get-simulated-bc-discharge-csv', app_workspace=True)
 def get_simulated_bc_discharge_csv(request, app_workspace):
     """
     Get historic simulations from ERA Interim
@@ -1808,11 +1729,7 @@ def get_simulated_bc_discharge_csv(request, app_workspace):
     try:
 
         get_data = request.GET
-        watershed = get_data['watershed']
-        subbasin = get_data['subbasin']
-        comid = get_data['streamcomid']
         codEstacion = get_data['stationcode']
-        nomEstacion = get_data['stationname']
 
         '''Get Bias Corrected Data'''
         corrected_data_file_path = os.path.join(app_workspace.path, 'corrected_data.json')
@@ -1821,7 +1738,7 @@ def get_simulated_bc_discharge_csv(request, app_workspace):
         corrected_df.sort_index(inplace=True, ascending=True)
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=corrected_simulated_discharge_{0}.csv'.format(codEstacion)
+        response['Content-Disposition'] = 'attachment; filename=corrected_simulated_discharge_{0}.csv'.format(codEstacion)  # noqa: E501
 
         corrected_df.to_csv(encoding='utf-8', header=True, path_or_buf=response)
 
@@ -1836,11 +1753,7 @@ def get_simulated_bc_discharge_csv(request, app_workspace):
         })
 
 
-@controller(
-    name='get_forecast_data_csv',
-    url='get-forecast-data-csv',
-    app_workspace=True,
-)
+@controller(name='get_forecast_data_csv', url='get-forecast-data-csv', app_workspace=True)
 def get_forecast_data_csv(request, app_workspace):
     """""
     Returns Forecast data as csv
@@ -1861,7 +1774,7 @@ def get_forecast_data_csv(request, app_workspace):
 
         # Writing CSV
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=streamflow_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)
+        response['Content-Disposition'] = 'attachment; filename=streamflow_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)  # noqa: E501
 
         forecast_df.to_csv(encoding='utf-8', header=True, path_or_buf=response)
 
@@ -1876,11 +1789,7 @@ def get_forecast_data_csv(request, app_workspace):
         })
 
 
-@controller(
-    name='get_forecast_ensemble_data_csv',
-    url='get-forecast-ensemble-data-csv',
-    app_workspace=True,
-)
+@controller(name='get_forecast_ensemble_data_csv', url='get-forecast-ensemble-data-csv', app_workspace=True)
 def get_forecast_ensemble_data_csv(request, app_workspace):
     """""
     Returns Forecast data as csv
@@ -1889,7 +1798,7 @@ def get_forecast_ensemble_data_csv(request, app_workspace):
     get_data = request.GET
 
     try:
-        #get station attributes
+        # get station attributes
         watershed = get_data['watershed']
         subbasin = get_data['subbasin']
         comid = get_data['streamcomid']
@@ -1903,7 +1812,7 @@ def get_forecast_ensemble_data_csv(request, app_workspace):
 
         # Writing CSV
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=streamflow_ensemble_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)
+        response['Content-Disposition'] = 'attachment; filename=streamflow_ensemble_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)  # noqa: E501
 
         forecast_ens.to_csv(encoding='utf-8', header=True, path_or_buf=response)
 
@@ -1918,11 +1827,7 @@ def get_forecast_ensemble_data_csv(request, app_workspace):
         })
 
 
-@controller(
-    name='get_forecast_bc_data_csv',
-    url='get-forecast-bc-data-csv',
-    app_workspace=True,
-)
+@controller(name='get_forecast_bc_data_csv', url='get-forecast-bc-data-csv', app_workspace=True)
 def get_forecast_bc_data_csv(request, app_workspace):
     """""
     Returns Forecast data as csv
@@ -1944,12 +1849,11 @@ def get_forecast_bc_data_csv(request, app_workspace):
         fixed_stats.sort_index(inplace=True, ascending=True)
 
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=corrected_streamflow_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)
+        response['Content-Disposition'] = 'attachment; filename=corrected_streamflow_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)  # noqa: E501
 
         fixed_stats.to_csv(encoding='utf-8', header=True, path_or_buf=response)
 
         return response
-
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -1960,11 +1864,7 @@ def get_forecast_bc_data_csv(request, app_workspace):
         })
 
 
-@controller(
-    name='get_forecast_ensemble_bc_data_csv',
-    url='get-forecast-ensemble-bc-data-csv',
-    app_workspace=True,
-)
+@controller(name='get_forecast_ensemble_bc_data_csv', url='get-forecast-ensemble-bc-data-csv', app_workspace=True)
 def get_forecast_ensemble_bc_data_csv(request, app_workspace):
     """""
     Returns Forecast data as csv
@@ -1987,7 +1887,7 @@ def get_forecast_ensemble_bc_data_csv(request, app_workspace):
 
         # Writing CSV
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=corrected_streamflow_ensemble_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)
+        response['Content-Disposition'] = 'attachment; filename=corrected_streamflow_ensemble_forecast_{0}_{1}_{2}_{3}.csv'.format(watershed, subbasin, comid, startdate)  # noqa: E501
 
         corrected_ensembles.to_csv(encoding='utf-8', header=True, path_or_buf=response)
 

@@ -48,7 +48,7 @@ To run any tests:
 To learn more about writing tests, see:
     https://docs.djangoproject.com/en/1.9/topics/testing/overview/#writing-tests
     https://docs.python.org/2.7/library/unittest.html#module-unittest
-"""
+"""  # noqa: E501
 
 
 class HistoricalValidationToolColombiaTestCase(TethysTestCase):
@@ -152,7 +152,7 @@ class HistoricalValidationToolColombiaTestCase(TethysTestCase):
         c.force_login(user)
 
         # Have the test client "browse" to your home page
-        response = c.get('/apps/historical-validation-tool-colombia/')  # The final '/' is essential for all pages/controllers
+        response = c.get('/apps/historical-validation-tool-colombia/')  # The final '/' is needed for all pages/controllers  # noqa: E501
 
         # Test that the request processed correctly (with a 200 status code)
         self.assertEqual(response.status_code, 200)

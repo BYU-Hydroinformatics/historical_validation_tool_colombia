@@ -38,10 +38,8 @@
     height: 100%;
 }
 
-.map-view-legend {
+#map-view-legend {
   bottom: 50px;
-  /*right: 20px;*/
-  width: 150px;
   max-height: 90%;
   overflow-y: auto;
   margin: 5px;
@@ -53,10 +51,14 @@
 
 #obsgraph {
     height: 100%;
-    width: 85%;
 }
 
-#obsgraph .modal-body {
+#obsgraph .modal-content {
+  width: 85%;
+  margin: 0 auto;
+}
+
+#obsgraph .modal- {
   height: 100%;
   border-radius: 0;
 }
@@ -118,11 +120,14 @@
 }
 
 .obslogos {
-    width: 40%;
+    width: 20%;
     padding: 0 5px 0 5px;
 }
 
 #Download_hydrographs{
   display: flex;
   flex-direction: row;
+}
+.input-group.mb-3{
+  margin-bottom: 0 !important;
 }

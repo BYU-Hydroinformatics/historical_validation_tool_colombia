@@ -1,5 +1,6 @@
-from tethys_sdk.base import TethysAppBase, url_map_maker
+from tethys_sdk.base import TethysAppBase
 from tethys_sdk.app_settings import CustomSetting, SpatialDatasetServiceSetting
+
 
 class HistoricalValidationToolColombia(TethysAppBase):
     """
@@ -12,8 +13,9 @@ class HistoricalValidationToolColombia(TethysAppBase):
     package = 'historical_validation_tool_colombia'
     root_url = 'historical-validation-tool-colombia'
     color = '#002255'
-    description = 'This app combines the observed data and the simulated data from the GEOGloWS ECMWF Streaamflow Services in Colombia.'
-    tags = '"Hydrology", "Time Series", "Bias Correction", "Hydrostats", "GEOGloWS", "Historical Validation Tool", "Colombia"'
+    description = 'This app combines the observed data and the simulated data from the GEOGloWS ECMWF Streaamflow' \
+                  'Services in Colombia.'
+    tags = '"Historical Validation Tool", "Colombia"'
     enable_feedback = False
     feedback_emails = []
 
@@ -37,7 +39,7 @@ class HistoricalValidationToolColombia(TethysAppBase):
                 type=CustomSetting.TYPE_STRING,
                 description='Workspace within Geoserver where web service is',
                 required=True,
-                    default='colombia_hydroviewer',
+                default='colombia_hydroviewer',
             ),
             CustomSetting(
                 name='region',
