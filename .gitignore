@@ -9,5 +9,6 @@
 *.DS_Store
 .idea/
 *.vscode
-tethysapp/*/workspaces/*
+tethysapp/*/workspaces/app_workspace/*
+tethysapp/*/workspaces/user_workspace/*
 !tethysapp/*/workspaces/*/.gitkeep
