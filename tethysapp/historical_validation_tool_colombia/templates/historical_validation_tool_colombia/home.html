@@ -1,6 +1,6 @@
 {% extends "historical_validation_tool_colombia/base.html" %}
 
-{% load staticfiles %}
+{% load static %}
 {% load tethys_gizmos %}
 
 {% block import_gizmos %}
@@ -15,14 +15,14 @@
         <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <polyline points="19 1, 1 6, 19 14, 1 19" stroke="#0000FF" fill="transparent" stroke-width="2"/>
         </svg>
-        Streams <input id="stp-stream-toggle" class="toggle-layer" type="checkbox" checked data-toggle="toggle" data-size="mini">
+        Ríos <input id="stp-stream-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
       </div>
 
       <div>
         <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <polyline points="0 10, 0 0, 10 0, 10 10, 0 10" stroke="rgba(255,0,0,1)" fill="rgba(255,0,0,1)" stroke-width="2"/>
         </svg>
-        Stations <input id="stp-stations-toggle" class="toggle-layer" type="checkbox" checked data-toggle="toggle" data-size="mini">
+        Estaciones <input id="stp-stations-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
       </div>
 
       <div>
@@ -61,10 +61,10 @@
         </div>
         
         {# Search button #}
-        <button id="search-btn" style="width: 100%;" ><span class="glyphicon glyphicon-search"></span></button>
+        <button id="search-btn" style="width: 100%;" ><span class="bi bi-search"></span></button>
         
         {# Alert paragraph #}
-        <div id="search-alert" class="hidden">
+        <div id="search-alert" class="d-none">
           <p></p>
         </div>
 
@@ -76,15 +76,16 @@
 {% endblock %}
 
 {% block header_buttons %}
-  <div class="hidden" style="margin-right: 15px;">
+  <div class="d-none" style="margin-right: 15px;">
     {% gizmo text_input geoserver_endpoint %}
   </div>
-  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="View Graph">
-    <a data-toggle="modal" data-target="#obsgraph"><span class="glyphicon glyphicon-globe"></span></a>
+
+  <div class="header-button bi-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View Graph">
+    <a data-bs-toggle="modal" data-bs-target="#obsgraph"><span class="bi bi-globe"></span></a>
   </div>
 
-  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Help">
-    <a data-toggle="modal" data-target="#help-modal"><span class="glyphicon glyphicon-question-sign"></span></a>
+  <div class="header-button bi-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help">
+    <a data-bs-toggle="modal" data-bs-target="#help-modal"><span class="bi bi-question-lg"></span></a>
   </div>
 {% endblock %}
 
@@ -95,7 +96,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-d-none="true">&times;</span></button> -->
           <div class="row">
             <div id="station-info" class="col-md-8"></div>
             <div class="col-md-4">
@@ -106,14 +107,16 @@
             </div>
             <div id="interaction"></div>
           </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        
         <div class="modal-body">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a id="hydrographs_tab_link" href="#hydrographs" aria-controls="hydrographs" role="tab" data-toggle="tab">Hydrographs</a></li>
-            <li role="presentation"><a id="visualAnalysis_tab_link" href="#visualAnalysis" aria-controls="visualAnalysis" role="tab" data-toggle="tab">Visual Analysis</a></li>
-            <li role="presentation"><a id="metricsReport_tab_link" href="#metricsReport" aria-controls="metricsReport" role="tab" data-toggle="tab">Metrics Report</a></li>
-            <li role="presentation"><a id="forecast_tab_link" href="#forecast" aria-controls="forecast" role="tab" data-toggle="tab">Forecast</a></li>
+            <li role="presentation" class="nav-item"><a id="hydrographs_tab_link"    href="#hydrographs"    aria-controls="hydrographs"    role="tab" data-bs-toggle="tab" class="nav-link active">Hydrographs</a></li>
+            <li role="presentation" class="nav-item"><a id="visualAnalysis_tab_link" href="#visualAnalysis" aria-controls="visualAnalysis" role="tab" data-bs-toggle="tab" class="nav-link">Visual Analysis</a></li>
+            <li role="presentation" class="nav-item"><a id="metricsReport_tab_link"  href="#metricsReport"  aria-controls="metricsReport"  role="tab" data-bs-toggle="tab" class="nav-link">Metrics Report</a></li>
+            <li role="presentation" class="nav-item"><a id="forecast_tab_link"       href="#forecast"       aria-controls="forecast"       role="tab" data-bs-toggle="tab" class="nav-link">Forecast</a></li>
           </ul>
           <!-- Tab panes -->
           <div class="tab-content">
@@ -121,23 +124,23 @@
             <div role="tabpanel" class="tab-pane active" id="hydrographs">
               <div class="panel panel-default">
                 <div class="panel-body">
-                  <div class="flex-container-row"><img id="hydrographs-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="hydrographs-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="hydrographs-chart"></div>
                   <p> Download Data </p>
                   <div id="Download_hydrographs">
-                    <div id="download_observed_discharge" class="btn-group hidden long-term-select" role="group">
-                      <a class="btn btn-success" role="button" id="submit-download-observed-discharge">
-                        <span class="glyphicon glyphicon-play"></span> Observed Discharge
+                    <div id="download_observed_discharge" class="btn-group d-none long-term-select" role="group">
+                      <a class="btn btn-outline-success" role="button" id="submit-download-observed-discharge">
+                        <span class="bi bi-play"></span> Observed Discharge
                       </a>
                     </div>
-                    <div id="download_simulated_discharge" class="btn-group hidden" role="group">
+                    <div id="download_simulated_discharge" class="btn-group d-none" role="group">
                       <a class="btn btn-info" role="button" id="submit-download-simulated-discharge">
-                        <span class="glyphicon glyphicon-play"></span> Simulated Discharge
+                        <span class="bi bi-play"></span> Simulated Discharge
                       </a>
                     </div>
-                    <div id="download_simulated_bc_discharge" class="btn-group hidden long-term-select" role="group">
-                      <a class="btn btn-success" role="button" id="submit-download-simulated-bc-discharge">
-                        <span class="glyphicon glyphicon-play"></span> Corrected Simulated Discharge
+                    <div id="download_simulated_bc_discharge" class="btn-group d-none long-term-select" role="group">
+                      <a class="btn btn-outline-success" role="button" id="submit-download-simulated-bc-discharge">
+                        <span class="bi bi-play"></span> Corrected Simulated Discharge
                       </a>
                     </div>
                   </div>
@@ -148,15 +151,15 @@
             <div role="tabpanel" class="tab-pane" id="visualAnalysis">
               <div class="panel panel-default">
                 <div class="panel-body">
-                  <div class="flex-container-row"><img id="dailyAverages-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="dailyAverages-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="dailyAverages-chart"></div>
-                  <div class="flex-container-row"><img id="monthlyAverages-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="monthlyAverages-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="monthlyAverages-chart"></div>
-                  <div class="flex-container-row"><img id="scatterPlot-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="scatterPlot-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="scatterPlot-chart"></div>
-                  <div class="flex-container-row"><img id="scatterPlotLogScale-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="scatterPlotLogScale-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="scatterPlotLogScale-chart"></div>
-                  <div class="flex-container-row"><img id="volumeAnalysis-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="volumeAnalysis-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="volumeAnalysis-chart"></div>
                   <br>
                   <div class="metric-table" id="volume_table_div" style="display:none">
@@ -165,6 +168,7 @@
                 </div>
               </div>
             </div>
+
             <!-- Metricts report-->
             <div role="tabpanel" class="tab-pane" id="metricsReport">
               <div class="panel panel-default">
@@ -175,25 +179,31 @@
                   <h3>Select the Metrics to Include in the Report:</h3>
                   <a href="https://hydroerr.readthedocs.io/en/stable/list_of_metrics.html" target="_blank">[Docs]</a>
                   <div id="metric_select_error"></div>
+                  
                   {# Displaying all of the metrics for the user to select #}
-                  <select id="metric_select2" name="metrics" style="width: 100%" multiple="multiple">
+                  <select id="metric_select2" name="metrics" style="width: 100%; height: 30px;" multiple="multiple">
                     {% for name_abbr in metric_loop_list %}
                       <option value="{{ name_abbr.1 }}">{{ name_abbr.0 }}</option>
                     {% endfor %}
                   </select>
                   <br>
-                  <h4>
-                    <button type="button" class="btn btn-success" id="make-table">Add Metrics to List</button><br><br>
-                    <p>
-                      Press the button to add metrics to the default list. The default list includes: Mean Error, Root Mean Square Error, Normalize Root Mean Square Error- mean
-                      , Mean Absolute Percentage Error, Nash-Sutcliffe Efficiency, Kling-Gupta-Efficiency (2009), King-Glupta-Efficiency (2012), Pearson Correlation Coefficient,
-                      Spearman Rank Correlation Coefficient, and Coefficient of Determination.
-                    </p>
-                    Optional Parameters
-                    <span style="font-size: 15px;" class="glyphicon glyphicon-info-sign icon_info"
-                          title="Optional parameter input boxes will appear here if a metric with optional parameters is selected.">
-                    </span>
-                  </h4>
+                  
+                  <button type="button" class="btn btn-outline-success" id="make-table"><h4>Add Metrics to List</h4></button><br><br>
+                  <p>
+                    Press the button to add metrics to the default list. The default list includes: Mean Error, Root Mean 
+                    Square Error, Normalize Root Mean Square Error- mean, Mean Absolute Percentage Error, Nash-Sutcliffe 
+                    Efficiency, Kling-Gupta-Efficiency (2009), King-Glupta-Efficiency (2012), Pearson Correlation Coefficient,
+                    Spearman Rank Correlation Coefficient, and Coefficient of Determination.
+                  </p>
+                  <strong>Optional Parameters</strong>
+                  <i class="bi bi-info-circle" title="Optional parameter input boxes will appear here if a metric with optional parameters is selected." ></i>
+
+                  <!--
+                  <span style="font-size: 15px;" class="bi bi-info-circle-fill icon_info"
+                        title="Optional parameter input boxes will appear here if a metric with optional parameters is selected.">
+                  </span>
+                -->
+
                   <div class="form-row" id="mase_param_div" style="display: none">
                     <div class="form-group col-md-12" id="MASE_form">
                       <label for="mase_m">Mean Absolute Squared M Value</label>
@@ -253,35 +263,35 @@
             <div role="tabpanel" class="tab-pane" id="forecast">
               <div class="panel panel-default">
                 <div class="panel-body">
-                  <div id="dates" class="hidden form-group" style="padding: 30px 30px 20px 0">
+                  <div id="dates" class="d-none form-group" style="padding: 30px 30px 20px 0">
                     <!--<select id="datesSelect" class="form-control"></select>-->
                     {% gizmo date_picker %}
                   </div>
-                  <div class="flex-container-row"><img id="forecast-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="forecast-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="forecast-chart"></div>
-                  <div id="download_forecast" class="btn-group hidden" role="group">
+                  <div id="download_forecast" class="btn-group d-none" role="group">
                     <a class="btn btn-info" role="button" id="submit-download-forecast">
-                      <span class="glyphicon glyphicon-play"></span> Download Forecast
+                      <span class="bi bi-play"></span> Download Forecast
                     </a>
                   </div>
-                  <div id="download_forecast_ensemble" class="btn-group hidden" role="group">
-                    <a class="btn btn-success" role="button" id="submit-download-forecast-ensemble">
-                      <span class="glyphicon glyphicon-play"></span> Download Forecast Ensemble
+                  <div id="download_forecast_ensemble" class="btn-group d-none" role="group">
+                    <a class="btn btn-outline-success" role="button" id="submit-download-forecast-ensemble">
+                      <span class="bi bi-play"></span> Download Forecast Ensemble
                     </a>
                   </div>
-                  <!--<div id="dates" class="hidden form-group" style="padding: 30px 30px 20px 0">-->
+                  <!--<div id="dates" class="d-none form-group" style="padding: 30px 30px 20px 0">-->
                     <!--<select id="datesSelect" class="form-control"></select>-->
                   <!--</div>-->
-                  <div class="flex-container-row"><img id="forecast-bc-loading" class="view-file hidden" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
+                  <div class="flex-container-row"><img id="forecast-bc-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
                   <div id="forecast-bc-chart"></div>
-                  <div id="download_forecast_bc" class="btn-group hidden long-term-select" role="group">
+                  <div id="download_forecast_bc" class="btn-group d-none long-term-select" role="group">
                     <a class="btn btn-info" role="button" id="submit-download-forecast-bc">
-                      <span class="glyphicon glyphicon-play"></span> Download Corrected Forecast
+                      <span class="bi bi-play"></span> Download Corrected Forecast
                     </a>
                   </div>
-                  <div id="download_forecast_ensemble_bc" class="btn-group hidden" role="group">
+                  <div id="download_forecast_ensemble_bc" class="btn-group d-none" role="group">
                     <a class="btn btn-success" role="button" id="submit-download-forecast-bc-ensemble">
-                      <span class="glyphicon glyphicon-play"></span> Download Bias Corrected Forecast Ensemble
+                      <span class="bi bi-play"></span> Download Bias Corrected Forecast Ensemble
                     </a>
                   </div>
                 </div>
@@ -290,9 +300,9 @@
 
           </div>
         </div>
-        <div id="info" class="hidden"></div>
+        <div id="info" class="d-none"></div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -302,7 +312,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           <h5 class="modal-title" id="help-modal-label">Historical Validation Tool Colombia</h5>
         </div>
         <div class="modal-body">
@@ -359,8 +369,8 @@
           </ul>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
         </div>
       </div>
     </div>

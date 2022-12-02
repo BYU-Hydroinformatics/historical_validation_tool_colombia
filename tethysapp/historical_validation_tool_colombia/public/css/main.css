@@ -60,6 +60,10 @@
   border-radius: 0;
 }
 
+.modal-content{
+  width: 115%;
+}
+
 .form-group {
     margin-bottom: 0;
 }
@@ -111,7 +115,7 @@
 }
 
 .obslogos {
-    width: 40%;
+    width: 50%;
     padding: 0 5px 0 5px;
 }
 

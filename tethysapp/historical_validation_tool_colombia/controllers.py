@@ -15,13 +15,15 @@ import json
 import sys
 import plotly.graph_objs as go
 import scipy.stats as sp
+from scipy import integrate
 from HydroErr.HydroErr import metric_names, metric_abbr
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
-from scipy import integrate
+
 from tethys_sdk.gizmos import *
+from tethys_sdk.routing import controller
 
 import time
 from hs_restclient import HydroShare, HydroShareAuthBasic
@@ -32,7 +34,10 @@ from .app import HistoricalValidationToolColombia as app
 from .model import Stations_manage as stations
 
 
-def home(request):
+@controller(name = 'home',
+            url  = 'historical-validation-tool-colombia',
+            app_workspace=True)
+def home(request, app_workspace):
     """
     Controller for the app home page.
     """
@@ -101,7 +106,8 @@ def home(request):
     )
 
     # Load stations data (IDEAM_Stations_v2.json)
-    stations_file = os.path.join(os.path.join(app.get_app_workspace().path), 'IDEAM_Stations_v2.json')
+    # stations_file = os.path.join(os.path.join(app.get_app_workspace().path), 'IDEAM_Stations_v2.json')
+    stations_file = os.path.join(os.path.join(app_workspace.path), 'IDEAM_Stations_v2.json')
     foo_station = stations(path_dir=stations_file)
 
     search_list = foo_station.search_list
@@ -145,6 +151,9 @@ def home(request):
 
     return render(request, 'historical_validation_tool_colombia/home.html', context)
 
+
+@controller(name = 'get_popup_response',
+            url  = 'get-request-data')
 def get_popup_response(request):
     """
     get station attributes
@@ -238,6 +247,9 @@ def get_popup_response(request):
         })
 
 
+
+@controller(name = 'get_hydrographs',
+            url  = 'get-hydrographs')
 def get_hydrographs(request):
     """
     Get observed data from csv files in Hydroshare
@@ -305,7 +317,8 @@ def get_hydrographs(request):
             'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
         })
 
-
+@controller(url  = 'get-dailyAverages',
+            name = 'get_dailyAverages')
 def get_dailyAverages(request):
     """
     Get observed data from csv files in Hydroshare
@@ -384,6 +397,8 @@ def get_dailyAverages(request):
         })
 
 
+@controller(url  = "get-monthlyAverages",
+            name = "get_monthlyAverages" )
 def get_monthlyAverages(request):
     """
     Get observed data from csv files in Hydroshare
@@ -462,6 +477,8 @@ def get_monthlyAverages(request):
         })
 
 
+@controller(name = "get_scatterPlot", 
+            url  = "get-scatterPlot")
 def get_scatterPlot(request):
     """
     Get observed data from csv files in Hydroshare
@@ -580,6 +597,8 @@ def get_scatterPlot(request):
         })
 
 
+@controller(url  = "get-scatterPlotLogScale",
+            name = "get_scatterPlotLogScale")
 def get_scatterPlotLogScale(request):
     """
     Get observed data from csv files in Hydroshare
@@ -671,6 +690,9 @@ def get_scatterPlotLogScale(request):
             'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
         })
 
+
+@controller(name = "get_volumeAnalysis",
+            url  = "get-volumeAnalysis")
 def get_volumeAnalysis(request):
     """
     Get observed data from csv files in Hydroshare
@@ -770,6 +792,8 @@ def get_volumeAnalysis(request):
         })
 
 
+@controller(name = "volume_table_ajax",
+            url  = "volume-table-ajax")
 def volume_table_ajax(request):
     """Calculates the volumes of the simulated and
     observed streamflow"""
@@ -838,6 +862,8 @@ def volume_table_ajax(request):
 
 
 # Metric report
+@controller(name = "make_table_ajax",
+            url  = "make-table-ajax")
 def make_table_ajax(request):
 
     start_time = time.time()
@@ -1010,6 +1036,8 @@ def get_units_title(unit_type):
     return units_title
 
 
+@controller(name = "get_time_series",
+            url  = "get-time-series")
 def get_time_series(request):
 
     start_time = time.time()
@@ -1254,7 +1282,8 @@ def get_time_series(request):
             'error': f'{"error: " + str(e), "line: " + str(exc_tb.tb_lineno)}',
         })
 
-
+@controller(name = "get_time_series_bc",
+            url  = "get-time-series-bc")
 def get_time_series_bc(request):
 
     start_time = time.time()
@@ -1665,6 +1694,8 @@ def get_time_series_bc(request):
         })
 
 
+@controller(name = "get_available_dates",
+            url  = "get-available-dates")
 def get_available_dates(request):
 
     get_data = request.GET
@@ -1698,6 +1729,8 @@ def get_available_dates(request):
     })
 
 
+@controller(name = "get_observed_discharge_csv",
+            url  = "get-observed-discharge-csv")
 def get_observed_discharge_csv(request):
     """
     Get observed data from csv files in Hydroshare
@@ -1733,6 +1766,8 @@ def get_observed_discharge_csv(request):
         })
 
 
+@controller(name = "get_simulated_discharge_csv",
+            url  = "get-simulated-discharge-csv")
 def get_simulated_discharge_csv(request):
     """
     Get historic simulations from ERA Interim
@@ -1768,6 +1803,8 @@ def get_simulated_discharge_csv(request):
         })
 
 
+@controller(name = "get_simulated_bc_discharge_csv",
+            url  = "get-simulated-bc-discharge-csv")
 def get_simulated_bc_discharge_csv(request):
     """
     Get historic simulations from ERA Interim
@@ -1804,6 +1841,8 @@ def get_simulated_bc_discharge_csv(request):
         })
 
 
+@controller(name = "get_forecast_data_csv",
+            url  = "get-forecast-data-csv")
 def get_forecast_data_csv(request):
     """""
     Returns Forecast data as csv
@@ -1839,6 +1878,8 @@ def get_forecast_data_csv(request):
         })
 
 
+@controller(name = "get_forecast_ensemble_data_csv",
+            url  = "get-forecast-ensemble-data-csv")
 def get_forecast_ensemble_data_csv(request):
     """""
     Returns Forecast data as csv
@@ -1876,6 +1917,8 @@ def get_forecast_ensemble_data_csv(request):
         })
 
 
+@controller(name = "get_forecast_bc_data_csv",
+            url  = "get-forecast-bc-data-csv")
 def get_forecast_bc_data_csv(request):
     """""
     Returns Forecast data as csv
@@ -1913,6 +1956,8 @@ def get_forecast_bc_data_csv(request):
         })
 
 
+@controller(name = "get_forecast_ensemble_bc_data_csv",
+            url  = "get-forecast-ensemble-bc-data-csv")
 def get_forecast_ensemble_bc_data_csv(request):
     """""
     Returns Forecast data as csv
@@ -1952,6 +1997,8 @@ def get_forecast_ensemble_bc_data_csv(request):
 
 
 ############################################################
+@controller(name = 'get_zoom_array',
+            url  = 'get-zoom-array')
 def get_zoom_array(request):
     zoom_description = request.GET['zoom_desc']
 
@@ -1982,10 +2029,15 @@ def get_zoom_array(request):
 
 ############################################################
 
+@controller(name = "user_manual",
+            url  = "historical-validation-tool-colombia/user_manual")
 def user_manual(request):
     context = {}
     return render(request, 'historical_validation_tool_colombia/user_manual.html', context)
 
+
+@controller(name = "technical_manual",
+            url  = "historical-validation-tool-colombia/technical_manual")
 def technical_manual(request):
     context = {}
     return render(request, 'historical_validation_tool_colombia/technical_manual.html', context)
