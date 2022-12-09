@@ -9,24 +9,27 @@
 
 {% block app_content %}
   <div id="map" class="map">
-    <div id="map-view-legend" class="map-view-legend ol-unselectable ol-control">
-      
-      <div>
-        <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="19 1, 1 6, 19 14, 1 19" stroke="#0000FF" fill="transparent" stroke-width="2"/>
-        </svg>
-        Ríos <input id="stp-stream-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
+    <div id="map-view-legend" class="map-view-legend">
+      <div class="selected-check-list">
+        <strong>Leyenda</strong>
+        <div>
+          <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="19 1, 1 6, 19 14, 1 19" stroke="#0000FF" fill="transparent" stroke-width="2"/>
+          </svg>
+          Ríos 
+          <input id="stp-stream-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
+        </div>
+
+        <div>
+          <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="0 10, 0 0, 10 0, 10 10, 0 10" stroke="rgba(255,0,0,1)" fill="rgba(255,0,0,1)" stroke-width="2"/>
+          </svg>
+          Estaciones
+          <input id="stp-stations-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
+        </div>
       </div>
 
       <div>
-        <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="0 10, 0 0, 10 0, 10 10, 0 10" stroke="rgba(255,0,0,1)" fill="rgba(255,0,0,1)" stroke-width="2"/>
-        </svg>
-        Estaciones <input id="stp-stations-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
-      </div>
-
-      <div>
-        <br>
         {% gizmo select_input2 regions %}
       </div>
 

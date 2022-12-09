@@ -6,9 +6,12 @@
 
 
 {% block header_buttons %}
-  <div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="About">
-    <a data-toggle="modal" data-target="#about"><span class="bi bi-info-lg"></span></a>
-  </div>
+
+{% url "historical_validation_tool_colombia:home" as home %}
+<div class="header-button bi-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Aplicación">
+  <a  href=" {{ home }}" ><span class="bi bi-arrow-return-left"></span></a>
+</div>
+
 {% endblock %}
 
 {% block app_navigation_items %}
@@ -16,9 +19,10 @@
 {% url "historical_validation_tool_colombia:user_manual" as user_manual %}
 {% url "historical_validation_tool_colombia:technical_manual" as technical_manual %}
 
-<li class="{% if request.path == home %}active{% endif %}"><a href="{{ home }}">Aplicación</a></li>
-<li class="{% if request.path == user_manual %}active{% endif %}"><a href="{{ user_manual }}">Manual de Usuario</a></li>
-<li class="{% if request.path == technical_manual %}active{% endif %}"><a href="{{ technical_manual }}">Manual Técnico</a></li>
+<li class="nav-item"><a class="nav-link {% if request.path == home %}active{% endif %}" href="{{ home }}">Aplicación</a></li>
+<li class="nav-item"><a class="nav-link {% if request.path == user_manual %}active{% endif %}" href="{{ user_manual }}">Manual de Usuario</a></li>
+<li class="nav-item"><a class="nav-link {% if request.path == technical_manual %}active{% endif %}" href="{{ technical_manual }}">Manual Técnico</a></li>
+
 {% endblock %}
 
 {% block app_content %}
