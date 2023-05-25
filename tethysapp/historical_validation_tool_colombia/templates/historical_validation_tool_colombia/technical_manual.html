@@ -1,4 +1,4 @@
-{% extends "historical_validation_tool_colombia/base.html" %}
+{% extends "historical_validation_tool_colombia/app_base.html" %}
 {% load static %}
 
 {% block import_gizmos %}
@@ -36,7 +36,7 @@
 
       <div class="fb_1">
         <div class="fb_11">
-          <p><center><img src="{% static 'historical_validation_tool_colombia/images/historic_validation_colombia_logo_v2.png' %}" style="width: 200px;" /> </center></p>
+          <p><center><img src="{% static 'historical_validation_tool_colombia/images/icon.gif' %}" style="width: 200px;" /> </center></p>
         </div>
         <div class="fb_12">
           <p>Los resultados de los modelos globales suelen mostrar sesgos a escala local o en lugares específicos.
@@ -55,7 +55,7 @@
       se basa en la curva de duración del caudal, que se ha propuesto para corregir el sesgo de caudal simulado por GEOGLoWS ECMWF.
       </p>
 
-      <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/curvaduracion.png' %}" style="width: 700px;" /> </center></p>
+      <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/curvaduracion.png' %}" style="width: 700px;" /> </center></p>
 
       <p>En primer lugar, la curva de duración del caudal es calculada a partir de las series temporales simuladas históricas
         y de las series temporales de caudales observados para cada mes. La curva de duración del caudal muestra el porcentaje
@@ -78,13 +78,13 @@
         del sesgo, la simulación histórica corrige la magnitud de los valores acercándolos a los datos observados.
         Sin embargo, no corrige el momento en el que se producen los picos. Sin embargo, los valores corregidos están en el
         mismo orden de magnitud que los valores observados.</p>
-      <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/technicalimage.png' %}" style="width: 700px;" /> </center></p>
+      <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/technicalimage.png' %}" style="width: 700px;" /> </center></p>
     </div>
 
     <div>
       <center><h3>Resultados para Colombia</h3></center>
       <p> En la siguiente imagen, se muestra la corrección de sesgo aplicada para Colombia:</p>
-      <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/colombiabias.png' %}" style="width: 700px;" /> </center></p>
+      <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/colombiabias.png' %}" style="width: 700px;" /> </center></p>
       <p>Para cuantificar la mejora de la simulación histórica se utilizó el coeficiente de eficiencia de Kling-Gupta (KGE -2012) </p>
       <p>En el gráfico anterior, se puede ver una mejora en la simulación histórica corregida por sesgo según lo
           documentado por la métrica KGE-2012.

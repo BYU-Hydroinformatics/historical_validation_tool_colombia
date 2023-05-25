@@ -1,5 +1,4 @@
-{% extends "historical_validation_tool_colombia/base.html" %}
-
+{% extends "historical_validation_tool_colombia/app_base.html" %}
 {% load static %}
 {% load tethys_gizmos %}
 
@@ -7,378 +6,258 @@
     {% import_gizmo_dependency plotly_view %}
 {% endblock %}
 
-{% block app_content %}
-  <div id="map" class="map">
-    <div id="map-view-legend" class="map-view-legend">
-      <div class="selected-check-list">
-        <strong>Leyenda</strong>
-        <div>
-          <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="19 1, 1 6, 19 14, 1 19" stroke="#0000FF" fill="transparent" stroke-width="2"/>
-          </svg>
-          Ríos 
-          <input id="stp-stream-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
-        </div>
+{% block title %}{{ tethys_app.name }}{% endblock %}
 
-        <div>
-          <svg width="20" height="20" viewPort="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="0 10, 0 0, 10 0, 10 10, 0 10" stroke="rgba(255,0,0,1)" fill="rgba(255,0,0,1)" stroke-width="2"/>
-          </svg>
-          Estaciones
-          <input id="stp-stations-toggle" class="toggle-layer" type="checkbox" checked data-bs-toggle="toggle" data-bs-size="mini">
-        </div>
-      </div>
+{% block app_icon %}
+  {# The path you provided in your app.py is accessible through the tethys_app.icon context variable #}
+  <img src="{% if 'http' in tethys_app.icon %}{{ tethys_app.icon }}{% else %}{% static tethys_app.icon %}{% endif %}" />
+{% endblock %}
 
-      <div>
-        {% gizmo select_input2 regions %}
-      </div>
+{# The name you provided in your app.py is accessible through the tethys_app.name context variable #}
+{% block app_title %}{{ tethys_app.name }}{% endblock %}
 
-      {# Search Basins #}
-      <div>
-        {% gizmo select_input2 basins %}
-      </div>
-
-      {# Search SubBasins #}
-      <div>
-        {% gizmo select_input2 subbasins %}
-      </div>
-
-      <div>
-        {# Search window #}
-        <div>
-          <form>
-            <label>Búsqueda por estación: </label>
-            <input id="search-txt" type="text" class="form-control" 
-           placeholder="Ejemplo" onkeyup="remove_names_for_list()">
-          </form>
-        </div>
-
-        {# Search list #}
-        <div id="list-search-container" class="" style="color: black;" >
-          <select id="list-search" style="width: 100%" multiple="multiple" 
-          onchange="list_search_func(value)">
-            {% for name_search in search_list %}
-              <option value="{{ name_search }}">{{ name_search }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        
-        {# Search button #}
-        <button id="search-btn" style="width: 100%;" ><span class="bi bi-search"></span></button>
-        
-        {# Alert paragraph #}
-        <div id="search-alert" class="d-none">
-          <p></p>
-        </div>
-
-      </div>
-
-    </div>
-    <img id="featureLoader" style="display: none; position:fixed; z-index: 100; left : 0; bottom : 0; right : 0; top : 0; margin:auto;" src="{% static 'historical_validation_tool_colombia/images/loader2.gif' %}">
-  </div>
+{% block app_navigation_items %}
 {% endblock %}
 
 {% block header_buttons %}
-  <div class="d-none" style="margin-right: 15px;">
-    {% gizmo text_input geoserver_endpoint %}
+  <div class="header-button glyphicon-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Data panel">
+    <a data-bs-toggle="modal" data-bs-target="#panel-modal"><i class="bi bi-graph-up"></i></a>
   </div>
-
-  <div class="header-button bi-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="View Graph">
-    <a data-bs-toggle="modal" data-bs-target="#obsgraph"><span class="bi bi-globe"></span></a>
-  </div>
-
-  <div class="header-button bi-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help">
-    <a data-bs-toggle="modal" data-bs-target="#help-modal"><span class="bi bi-question-lg"></span></a>
+  
+  <div class="header-button glyphicon-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help">
+    <a data-bs-toggle="modal" data-bs-target="#help-modal"><i class="bi bi-question-circle"></i></a>
   </div>
 {% endblock %}
+
+
+{% block app_content %}
+  <div id="map-container"></div>
+  <script type="text/javascript"> 
+      let stations  = "{{ data|safe }}";
+  </script>
+{% endblock %}
+
+
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
-  <!----Observed Data ----->
-  <div class="modal fade" id="obsgraph" tabindex="-1" role="dialog" aria-labelledby="about-modal-label">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-d-none="true">&times;</span></button> -->
-          <div class="row">
-            <div id="station-info" class="col-md-8"></div>
-            <div class="col-md-4">
-              <div align="right">
-                <img class="obslogos" src="{% static 'historical_validation_tool_colombia/images/byu_logo.png' %}">
-                <img class="obslogos" src="{% static 'historical_validation_tool_colombia/images/my-icon.png' %}">
-              </div>
-            </div>
-            <div id="interaction"></div>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        
-        <div class="modal-body">
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="nav-item"><a id="hydrographs_tab_link"    href="#hydrographs"    aria-controls="hydrographs"    role="tab" data-bs-toggle="tab" class="nav-link active">Hydrographs</a></li>
-            <li role="presentation" class="nav-item"><a id="visualAnalysis_tab_link" href="#visualAnalysis" aria-controls="visualAnalysis" role="tab" data-bs-toggle="tab" class="nav-link">Visual Analysis</a></li>
-            <li role="presentation" class="nav-item"><a id="metricsReport_tab_link"  href="#metricsReport"  aria-controls="metricsReport"  role="tab" data-bs-toggle="tab" class="nav-link">Metrics Report</a></li>
-            <li role="presentation" class="nav-item"><a id="forecast_tab_link"       href="#forecast"       aria-controls="forecast"       role="tab" data-bs-toggle="tab" class="nav-link">Forecast</a></li>
-          </ul>
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <!-- Hidrograph panel -->>
-            <div role="tabpanel" class="tab-pane active" id="hydrographs">
-              <div class="panel panel-default">
-                <div class="panel-body">
-                  <div class="flex-container-row"><img id="hydrographs-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="hydrographs-chart"></div>
-                  <p> Download Data </p>
-                  <div id="Download_hydrographs">
-                    <div id="download_observed_discharge" class="btn-group d-none long-term-select" role="group">
-                      <a class="btn btn-outline-success" role="button" id="submit-download-observed-discharge">
-                        <span class="bi bi-play"></span> Observed Discharge
-                      </a>
-                    </div>
-                    <div id="download_simulated_discharge" class="btn-group d-none" role="group">
-                      <a class="btn btn-info" role="button" id="submit-download-simulated-discharge">
-                        <span class="bi bi-play"></span> Simulated Discharge
-                      </a>
-                    </div>
-                    <div id="download_simulated_bc_discharge" class="btn-group d-none long-term-select" role="group">
-                      <a class="btn btn-outline-success" role="button" id="submit-download-simulated-bc-discharge">
-                        <span class="bi bi-play"></span> Corrected Simulated Discharge
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Visual analysis panel-->
-            <div role="tabpanel" class="tab-pane" id="visualAnalysis">
-              <div class="panel panel-default">
-                <div class="panel-body">
-                  <div class="flex-container-row"><img id="dailyAverages-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="dailyAverages-chart"></div>
-                  <div class="flex-container-row"><img id="monthlyAverages-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="monthlyAverages-chart"></div>
-                  <div class="flex-container-row"><img id="scatterPlot-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="scatterPlot-chart"></div>
-                  <div class="flex-container-row"><img id="scatterPlotLogScale-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="scatterPlotLogScale-chart"></div>
-                  <div class="flex-container-row"><img id="volumeAnalysis-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="volumeAnalysis-chart"></div>
-                  <br>
-                  <div class="metric-table" id="volume_table_div" style="display:none">
-                    <div id="volume_table"><!-- The table or errors go here --></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Metricts report-->
-            <div role="tabpanel" class="tab-pane" id="metricsReport">
-              <div class="panel panel-default">
-                <div class="panel-body">
-                  <hr>
-                  <h2>Table</h2>
-                  <hr>
-                  <h3>Select the Metrics to Include in the Report:</h3>
-                  <a href="https://hydroerr.readthedocs.io/en/stable/list_of_metrics.html" target="_blank">[Docs]</a>
-                  <div id="metric_select_error"></div>
-                  
-                  {# Displaying all of the metrics for the user to select #}
-                  <select id="metric_select2" name="metrics" style="width: 100%; height: 30px;" multiple="multiple">
-                    {% for name_abbr in metric_loop_list %}
-                      <option value="{{ name_abbr.1 }}">{{ name_abbr.0 }}</option>
-                    {% endfor %}
-                  </select>
-                  <br>
-                  
-                  <button type="button" class="btn btn-outline-success" id="make-table"><h4>Add Metrics to List</h4></button><br><br>
-                  <p>
-                    Press the button to add metrics to the default list. The default list includes: Mean Error, Root Mean 
-                    Square Error, Normalize Root Mean Square Error- mean, Mean Absolute Percentage Error, Nash-Sutcliffe 
-                    Efficiency, Kling-Gupta-Efficiency (2009), King-Glupta-Efficiency (2012), Pearson Correlation Coefficient,
-                    Spearman Rank Correlation Coefficient, and Coefficient of Determination.
-                  </p>
-                  <strong>Optional Parameters</strong>
-                  <i class="bi bi-info-circle" title="Optional parameter input boxes will appear here if a metric with optional parameters is selected." ></i>
-
-                  <!--
-                  <span style="font-size: 15px;" class="bi bi-info-circle-fill icon_info"
-                        title="Optional parameter input boxes will appear here if a metric with optional parameters is selected.">
-                  </span>
-                -->
-
-                  <div class="form-row" id="mase_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="MASE_form">
-                      <label for="mase_m">Mean Absolute Squared M Value</label>
-                      <input type="number" class="form-control" id="mase_m" name="mase_m" value=1>
-                    </div>
-                  </div>
-                  <div class="form-row" id="dmod_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="d_mod_form">
-                      <label for="dmod_j">Modified Index of Agreement J Value</label>
-                      <input type="number" class="form-control" id="dmod_j" name="dmod_j" value=1>
-                    </div>
-                  </div>
-                  <div class="form-row" id="nse_mod_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="NSE_mod_form">
-                      <label for="nse_mod_j">Modified Nash Sutcliffe J Value</label>
-                      <input type="number" class="form-control" id="nse_mod_j" name="nse_mod_j" value=1>
-                    </div>
-                  </div>
-                  <div class="form-row" id="lm_eff_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="lm_eff_form">
-                      <label for="lm_x_bar">Legate-McCabe Efficiency x-bar Value</label>
-                      <input type="number" class="form-control" id="lm_x_bar" name="lm_x_bar" value=1>
-                    </div>
-                  </div>
-                  <div class="form-row" id="mean_h6_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="mean_H6_form">
-                      <label for="h6_k_MHE">Mean H6 Error K Value</label>
-                      <input type="number" class="form-control" id="h6_k_MHE" name="h6_k_MHE" value=1>
-                    </div>
-                  </div>
-                  <div class="form-row" id="mean_abs_H6_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="mean_abs_H6_form">
-                      <label for="h6_k_AHE">Mean Absolute H6 Error K Value</label>
-                      <input type="number" class="form-control" id="h6_k_AHE" name="h6_k_AHE" value=1>
-                    </div>
-                  </div>
-                   <div class="form-row" id="rms_H6_param_div" style="display: none">
-                     <div class="form-group col-md-12" id="rms_H6_form">
-                       <label for="h6_k_RMSHE">Root Mean Square H6 Error K Value</label>
-                       <input type="number" class="form-control" id="h6_k_RMSHE" name="h6_k_RMSHE" value=1>
-                     </div>
-                   </div>
-                  <div class="form-row" id="d1_p_param_div" style="display: none">
-                    <div class="form-group col-md-12" id="d1_p_form">
-                      <label for="d1_p_x_bar">Legate-McCabe Index of Agreement x-bar Value</label>
-                      <input type="number" class="form-control" id="d1_p_x_bar" name="d1_p_x_bar" value=1>
-                    </div>
-                  </div>
-                  <br><br>
-                  <div class="metric-table" id="metric-table" style="display:none">
-                    <div id="table">{# The table of errors go here #}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Forecast panel -->
-            <div role="tabpanel" class="tab-pane" id="forecast">
-              <div class="panel panel-default">
-                <div class="panel-body">
-                  <div id="dates" class="d-none form-group" style="padding: 30px 30px 20px 0">
-                    <!--<select id="datesSelect" class="form-control"></select>-->
-                    {% gizmo date_picker %}
-                  </div>
-                  <div class="flex-container-row"><img id="forecast-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="forecast-chart"></div>
-                  <div id="download_forecast" class="btn-group d-none" role="group">
-                    <a class="btn btn-info" role="button" id="submit-download-forecast">
-                      <span class="bi bi-play"></span> Download Forecast
-                    </a>
-                  </div>
-                  <div id="download_forecast_ensemble" class="btn-group d-none" role="group">
-                    <a class="btn btn-outline-success" role="button" id="submit-download-forecast-ensemble">
-                      <span class="bi bi-play"></span> Download Forecast Ensemble
-                    </a>
-                  </div>
-                  <!--<div id="dates" class="d-none form-group" style="padding: 30px 30px 20px 0">-->
-                    <!--<select id="datesSelect" class="form-control"></select>-->
-                  <!--</div>-->
-                  <div class="flex-container-row"><img id="forecast-bc-loading" class="view-file d-none" src="{% static 'historical_validation_tool_colombia/images/loader.gif' %}" /></div>
-                  <div id="forecast-bc-chart"></div>
-                  <div id="download_forecast_bc" class="btn-group d-none long-term-select" role="group">
-                    <a class="btn btn-info" role="button" id="submit-download-forecast-bc">
-                      <span class="bi bi-play"></span> Download Corrected Forecast
-                    </a>
-                  </div>
-                  <div id="download_forecast_ensemble_bc" class="btn-group d-none" role="group">
-                    <a class="btn btn-success" role="button" id="submit-download-forecast-bc-ensemble">
-                      <span class="bi bi-play"></span> Download Bias Corrected Forecast Ensemble
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-        <div id="info" class="d-none"></div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- About Modal -->
+  <!-- Example Modal --> 
   <div class="modal fade" id="help-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title" id="help-modal-label"> <strong>Historical Validation Tool</strong></h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          <h5 class="modal-title" id="help-modal-label">Historical Validation Tool Colombia</h5>
         </div>
         <div class="modal-body">
-          <p>La app <strong>Historical Validation Tool personalizada para Colombia</strong> es una 
-            aplicación cuyo objetivo es evaluar y corregir el sesgo de las simulaciones históricas 
-            y los pronósticos generados por el modelo <a href="https://geoglows.ecmwf.int/">GeoGloWS 
-              ECMWF Streamflow</a> para el territorio colombiano.</p> 
-              
-          <p>Esta aplicación nos permite, por medio de la librería hydrostats, evaluar la precisión 
-            de la simulación histórica y la simulación histórica con corrección del sesgo del 
-            modelo <a href="https://geoglows.ecmwf.int/">GeoGloWS ECMWF Streamflow</a> en comparación 
-            con el caudal observado en las estaciones de medición del Instituto de Hidrología, 
-            Meteorología y Estudios Ambientales (IDEAM) de Colombia.</p>
-            
-            <p>Los usuarios pueden hacer 
-              uso de la búsqueda por sectores (departamentos, zonas hidrográficas, subzonas hidrográficas 
-              o nombre de la estación, código de la estación o nombre de la corriente) ubicada en la 
-              parte inferior izquierda de la pantalla y posteriormente hacer clic en la estación en 
-              el mapa para obtener las series de caudales observados, simulados y simulados 
-              corregidos.</p> 
-              
-              <ol> 
-                <li> La primera pestaña muestra un hidrograma con la serie histórica 
-                diaria de caudal observado, 43 años de series de caudal simuladas por medio del modelo 
-                GeoGloWS ECMWF Streamflow y simuladas con corrección del sesgo (de 1979 a 2022). 
-                Adicionalmente la opción de descargar las tres series en formato csv.</li> 
-              <li> La segunda pestaña muestra el análisis visual construido a partir de Hydrostats. 
-                Donde se incluyen; el gráfico con los promedio diarios multianuales de las series 
-                históricas observadas, las series históricas simuladas y las series históricas simuladas 
-                corregidas, el gráfico con los promedios mensuales multianuales, de las tres series, el 
-                gráfico con los diagramas de dispersión en escala normal y logarítmica (evaluando la 
-                dispersión entre los datos observados y simulados), y finalmente, los caudales diarios 
-                acumulados para el analisis de volumenes.</li>
-              <li> La tercera pestaña incluye un reporte con un listado de métricas de desempeño entre 
-                las series de caudales observadas contra simuladas y observadas contra simuladas corregidas. 
-                De igual manera, se presentan 6 métricas adicionales para validar la simulación histórica 
-                de la herramienta.</li> 
-              <li>La cuarta pestaña muestra un gráfico con los datos de pronóstico, mostrando este a escala 
-                diaria para los últimos 8 días y el futuro de alta resolución de los proximos 10 dias. En 
-                línea punteada los caudales mínimos y máximos de los 52 ensambles. En línea verde el espectro 
-                está delimitado por el percentil 25 y el 75 de los 52 conjuntos. En línea azul se presenta 
-                el promedio de los ensambles. También se presentan los umbrales de los periodos de retorno 
-                calculados de la serie de caudal histórica modelada para el tramo. Siendo, la primera gráfica 
-                con los datos modelados sin corregir y la segunda con la corrección del sesgo sobre estos. 
-                Finalmente, se presenta la posibilidad de descargar ambas series temporales.</li>
-              </ol>
-
-          <h5>Recursos adicionales:</h5>
-          <ul>
-            <li><a href="{% url 'historical_validation_tool_colombia:user_manual' %}">Manual de usuario.</a></li>
-            <li><a href="{% url 'historical_validation_tool_colombia:technical_manual' %}">Manual tecnico.</a></li>
-            <li><a href="https://www.ecmwf.int/en/about/what-we-do/global-forecasts" target="_blank">ECMWF Global Forecasts</a></li>
-            <li><a href="https://github.com/BYU-Hydroinformatics/historical_validation_tool_colombia.git" target="_blank">Git Hub</a></li>            
-          </ul>
+          <p> <strong>Historical Validation Tool personalizada para Colombia</strong> es una aplicación para la evaluación y correción de sesgo de la simulación histórica del modelo hidrológico global GEOGloWS ECMWF en Colombia.</p>
+          <p> Esta aplicación nos permite usar la funcionalidad de hydrostats para evaluar la precisión de la simulación histórica con y sin corrección de sesgo en la Herramienta de predicción de caudal GEOGloWS ECMWF en comparación con el caudal observado en las estaciones de medición en Colombia.</p>
+          <p> Esta corrección de sesgo se extiende a corto plazo a la herramienta de predicción de caudal GEOGloWS ECMWF para pronóstico. Los usuarios pueden hacer clic en cualquier estación del mapa para obtener datos observados y simulados.</p>
+          <p style="color:#e61e29;"> <strong>AVISO IMPORTANTE: </strong></p>
+             <p style="color:#e61e29;">
+              El usuario debe considerar que estas simulaciones y pronósticos son una referencia
+              que utiliza la herramienta de predicción del GEOGloWS ECMWF y datos observados de estaciones hidrológicas
+              del IDEAM para estimar el rango más probable caudales por encima o debajo del promedio
+              histórico simulado.</p>
+           </p>
+           <ol style="color:#e61e29;">
+             <li> El usuario debe tener en cuenta la probabilidad de que una predicción no sea siempre  correcta.</li>
+             <li> El usuario de esta herramienta acepta de antemano la forma y uso de la información.</li>
+           </ol style="color:#e61e29;">
+          <p><strong>Recursos adicionales:</strong></p>
+          <p>
+            <a href="{% url 'historical_validation_tool_colombia:user_manual' %}">Manual de usuario</a>
+            &nbsp &nbsp
+            <a href="{% url 'historical_validation_tool_colombia:technical_manual' %}">Manual técnico</a>
+          </p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+          <div class="FootNote">
+            <p style ><sup>
+                Fuentes: La red de drenaje ha sido obtenida del modelo GEOGloWS ECMWF;
+                Estaciones hidrológicas: IDEAM</sup> 
+            </p>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+    <!-- Data Station Panel -->
+    <div class="modal fade" id="panel-modal" tabindex="-1" role="dialog" aria-labelledby="panel-modal-label">
+      <div class="modal-dialog  modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-title" id="panel-modal-label">
+              <div>
+                <img src="{% static 'historical_validation_tool_colombia/images/logos.png' %}" width="600px">
+              </div>
+              <div>
+                <div class="container">
+                  <div class="row">
+                    <div class="col">
+                      <h5 id="panel-title-custom">Nombre de la estacion</h5>
+                    </div>
+                  </div>
+                  <div class="row" id="panel-station-information">
+                    <div class="col">
+                      <div class="row-station" id="station-comid-custom"> <b>COMID:</b> &nbsp   </div>
+                      <div class="row-station" id="station-river-custom"> <b>RIO:</b> &nbsp   </div>
+                      <div class="row-station" id="station-basin-custom"> <b>ZONA HIDROGRÁFICA:</b> &nbsp   </div>
+                    </div>
+                    <div class="col">
+                      <div class="row-station" id="station-latitude-custom"> <b>LATITUD:</b> &nbsp   </div>
+                      <div class="row-station" id="station-longitude-custom"> <b>LONGITUD:</b> &nbsp   </div>
+                      <div class="row-station" id="station-altitude-custom"> <b>ALTITUD:</b> &nbsp   </div>
+                    </div>
+                    <div class="col">
+                      <div class="row-station" id="station-locality1-custom"> <b>ÁREA OPERATIVA:</b> &nbsp   </div>
+                      <div class="row-station" id="station-locality2-custom"> <b>ÁREA HIDROGRÁFICA:</b> &nbsp   </div>
+                      <div class="row-station" id="station-locality3-custom"> <b>DEPARTAMENTO:</b> &nbsp   </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+          </div>
+          <div id="modal-body-panel-custom" class="modal-body" style="min-width: 100% !important;">
+              <ul class="nav nav-tabs" id="panel-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button 
+                    class="nav-link active" 
+                    id="hydrograph-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#hydrograph" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="hydrograph" 
+                    aria-selected="true"> Datos históricos </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button 
+                    class="nav-link" 
+                    id="visual-analisis-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#visual-analisis" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="visual-analisis" 
+                    aria-selected="false">Análisis visual</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button 
+                    class="nav-link" 
+                    id="metrics-tab" 
+                    data-bs-toggle="tab"
+                    data-bs-target="#metrics" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="metrics" 
+                    aria-selected="false"> Métricas </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button 
+                    class="nav-link" 
+                    id="forecast-tab" 
+                    data-bs-toggle="tab"
+                    data-bs-target="#forecast" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="forecast" 
+                    aria-selected="false"> Pronóstico </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button 
+                      class="nav-link" 
+                      id="corrected-forecast-tab" 
+                      data-bs-toggle="tab"
+                      data-bs-target="#corrected-forecast" 
+                      type="button" 
+                      role="tab" 
+                      aria-controls="corrected-forecast" 
+                      aria-selected="false"> Pronóstico corregido </button>
+                </li>
+              </ul>
+              <div class="tab-content" id="panel-tab-content">
+                <div class="tab-pane fade show active" id="hydrograph" role="tabpanel" aria-labelledby="hydrograph-tab">
+                  <div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+                    <div class="loading"> 
+                      <h2>LOADING DATA</h2>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="visual-analisis" role="tabpanel" aria-labelledby="visual-analisis-tab">
+                  <div class="loading-container" style="height: 350px; padding-top: 12px;">
+                    <br> 
+                    <div class="loading"> 
+                      <h2>LOADING DATA</h2>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="metrics" role="tabpanel" aria-labelledby="metrics-tab">
+                  <div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+                    <div class="loading"> 
+                      <h2>LOADING DATA</h2>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="forecast" role="tabpanel" aria-labelledby="forecast-tab">
+                  <div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+                    <div class="loading"> 
+                      <h2>LOADING DATA</h2>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="corrected-forecast" role="tabpanel" aria-labelledby="corrected-forecast-tab">
+                  <div class="loading-container" style="height: 350px; padding-top: 12px;"> 
+                    <div class="loading"> 
+                      <h2>LOADING DATA</h2>
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span> 
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
 {% endblock %}
 
-{% block app_actions %}
+
+{% block content_dependent_styles %}
+  {{ block.super }}
+  <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.css" rel="stylesheet" >
+  <link href="{% static 'historical_validation_tool_colombia/css/main.css' %}" rel="stylesheet"/>
+  <link href="{% static 'historical_validation_tool_colombia/css/map.css' %}" rel="stylesheet"/>
+  <link href="{% static 'historical_validation_tool_colombia/css/loader.css' %}" rel="stylesheet"/>
+  <link href="{% static 'historical_validation_tool_colombia/css/panel.css' %}" rel="stylesheet"/>
+  <link href="{% static 'historical_validation_tool_colombia/css/map_control.css' %}" rel="stylesheet"/>
 {% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'historical_validation_tool_colombia/libs/Leaflet/leaflet.js' %}" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js" type="text/javascript"></script>
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/flatpickr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/l10n/es.min.js"></script>
+  <script src="{% static 'historical_validation_tool_colombia/js/utils.js' %}" type="text/javascript"></script>
+  <script src="{% static 'historical_validation_tool_colombia/js/map.js' %}" type="text/javascript"></script>
+  <script src="{% static 'historical_validation_tool_colombia/js/map_control.js' %}" type="text/javascript"></script>
+  <script src="{% static 'historical_validation_tool_colombia/js/main.js' %}" type="text/javascript"></script>
+{% endblock %}
+
+
+
+
+

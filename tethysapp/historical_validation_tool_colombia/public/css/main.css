@@ -1,161 +1,32 @@
-.tab-content > .tab-pane,
-.pill-content > .pill-pane {
-  display: block;
-  height: 0;
-  overflow-y: hidden;
+body {
+    overflow-y: hidden !important;
 }
 
-.tab-content > .active,
-.pill-content > .active {
-  height: auto;
-}
-
-#headerCustomButtons {
-    margin-right: 15px;
-    margin-left: 15px;
-    width: 800px
-}
-
-#app-content-wrapper #app-content {
-  height: 100%;
-  /*padding-top: 60px;*/
-  /*padding-bottom: 50px;*/
+#app-content-wrapper {
+    height: auto !important;
 }
 
 #inner-app-content {
-  padding: 0;
+    height: calc("100% - 50px") !important;
+    overflow: hidden !important;
+    padding: 0px !important;
 }
 
-#app-actions {
-  display: none;
+#app-content {
+    min-height: 50% !important;
+    height: calc("100% - 50px") !important;
+    overflow: hidden !important;
 }
 
-#map {
-  height: 100%;
+#app-header .tethys-app-header {
+    height: 50px !important;
 }
 
-#graph {
-    height: 100%;
+.app-title {
+    font-size: 21px !important;
+    font-weight: 600;
 }
 
-.map-view-legend {
-  position: absolute;
-
-  /*General*/
-  background: #002255;
-  color:      white;
-  /*border: 1px #ddd solid;*/
-  opacity: 0.2;
-
-  /* Dimensions */
-  max-height:    90%;
-  min-width:     250px;
-  width:         fit-content;
-  border-radius: 15px;
-
-  /*Internal dimensions*/
-  margin:  min(5px, 0.75%);
-  padding: min(5px, 0.75%);
-  bottom:  50px;
-  /*right: 20px;*/
-  /*width: 150px;*/
-  
-  /*Others*/
-  overflow-y: auto;
-  z-index: 999;
-}
-.map-view-legend:hover{
-  border: 1px #ddd solid;
-  opacity: 1.0;
-}
-
-/*Selected checkbox*/
-.selected-check-list{
-  padding-top:    min(2px, 2%);
-  padding-bottom: min(2px, 2%);
-}
-.selected-check-list > div{
-  padding-left: min(5px, 5%);
-  padding-right: min(5px, 2%);
-  display: flex;
-  justify-content: space-between;
-  opacity: 0.75;
-}
-.selected-check-list > div:hover{
-  opacity: 1.0;
-  background: #00398f;
-}
-
-
-#obsgraph {
-    height: 100%;
-}
-
-#obsgraph .modal-body {
-  height: 100%;
-  border-radius: 0;
-}
-
-.modal-content{
-  width: 115%;
-}
-
-.form-group {
-    margin-bottom: 0;
-}
-
-.chart {
-    min-width: 320px;
-    max-width: 800px;
-    height: 220px;
-    margin: 0 auto;
-}
-
-.flex-container-row {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-around;
-    align-items: center;
-}
-
-#overview {
-    font-size: 15pt;
-    padding: 0 20px 0 20px;
-}
-
-#about .modal-dialog {
-  width: 75%;
-  height: 75%;
-  padding: 0;
-}
-
-#about .modal-body {
-  height: 100%;
-  border-radius: 0;
-}
-
-#graph .modal-dialog {
-  width: 75%;
-  height: 75%;
-  padding: 0;
-}
-
-#obsgraph .modal-dialog {
-  width: 75%;
-  height: 75%;
-  padding: 0;
-}
-
-.hidden {
-  display: none;
-}
-
-.obslogos {
-    width: 50%;
-    padding: 0 5px 0 5px;
-}
-
-#Download_hydrographs{
-  display: flex;
-  flex-direction: row;
+.icon-wrapper {
+    margin-left: 15px !important;
 }

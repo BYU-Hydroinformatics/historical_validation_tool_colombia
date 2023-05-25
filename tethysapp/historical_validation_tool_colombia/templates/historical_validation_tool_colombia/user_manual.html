@@ -1,4 +1,4 @@
-{% extends "historical_validation_tool_colombia/base.html" %}
+{% extends "historical_validation_tool_colombia/app_base.html" %}
 {% load static %}
 
 {% block import_gizmos %}
@@ -46,7 +46,7 @@
 
     <div class="fb_1">
       <div class="fb_11">
-        <p><center><img src="{% static 'historical_validation_tool_colombia/images/historic_validation_colombia_logo_v2.png' %}" style="width: 200px;" /> </center></p>
+        <p><center><img src="{% static 'historical_validation_tool_colombia/images/icon.gif' %}" style="width: 200px;" /> </center></p>
       </div>
       <div class="fb_12">
         <p>La Aplicación <strong> Historical Validation Tool</strong> usa los datos observados de caudal
@@ -63,15 +63,11 @@
     <h3><strong>Interfaz principal</strong></h3>
     <p>La interfaz de usuario muestra la delimitación de los ríos en azul y de las estaciones con puntos 
       en rojo. Para cada estación, el usuario puede ver series de tiempo y calcular métricas de error.</p>
-    <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/home.png' %}" style="width: 600px;" /> </center></p>
-
-    <p>Tanto los ríos como las estaciones pueden ser activados o desactivados del mapa base, como se muestra en la siguiente 
-      imagen:</p>
-    <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/stationless_and_streamless.png' %}" style="width: 600px;" /> </center></p>
+    <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/home.png' %}" style="width: 600px;" /> </center></p>
 
     <p> A la izquierda de la pantalla se muestra un panel con algunas <strong>opciones de 
       visualización.</strong></p>
-    <center><img id="botondesplegable=" src="{% static 'historical_validation_tool_colombia/images/imgs/legend.png' %}" style="width: 200px;"></center>
+    <center><img id="botondesplegable=" src="{% static 'historical_validation_tool_colombia/images/manual/legend.png' %}" style="width: 200px;"></center>
     
   </div>
 
@@ -87,7 +83,7 @@
          de medicion de caudal. A manera de ejemplo, el usuario puede hacer clic en el botón <i> Zoom al 
          Departamento</i> y seleccionar el departamento al cual quiera realizar zoom, obteniendo 
          un resultado como el mostrado a continuación:</p>
-        <a class="reference internal image-reference" href="_images/choco_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/choco_ep.png' %}" style="width: 500px;" /></center></a>
+        <a class="reference internal image-reference" href="_images/choco_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/manual/choco_ep.png' %}" style="width: 500px;" /></center></a>
       </li>
 
       <li><strong>Zonas hidrográficas</strong>
@@ -97,7 +93,7 @@
           <i>Zoom a Z.H.</i> y seleccionar de la lista despegable las diferentes zonas hidrográficas,
           al seleccionar una de estas, podrá hacer zoom a la zona hidrográfica seleccionada. Como se muestra 
           a continuación.</p>
-        <a class="reference internal image-reference" href="_images/cablit_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/cablit_ep.png' %}" style="width: 500px;" /></center></a>
+        <a class="reference internal image-reference" href="_images/cablit_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/manual/cablit_ep.png' %}" style="width: 500px;" /></center></a>
       </li>
 
       <li><strong>Sub zonas hidrográficas</strong>
@@ -106,7 +102,7 @@
           zonas hidrográficas. A manera de ejemplo, el usuario puedeclic en el botón <i>Zoom a 
             S.Z.H.</i>, y posteriormente seleccionar la zona a la cual se realizará el zoom. Como 
           se observa en la imagen a continuación.</p>
-        <a class="reference internal image-reference" href="_images/lamiel_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/lamiel_ep.png' %}" style="width: 700px;" /></center></a>
+        <a class="reference internal image-reference" href="_images/lamiel_ep.png"><center><img src="{% static 'historical_validation_tool_colombia/images/manual/lamiel_ep.png' %}" style="width: 700px;" /></center></a>
       </li>
 
       <li><strong>Búsqueda por estación</strong>
@@ -119,7 +115,7 @@
           <p>Se ingresa el nombre del rio en el espacio <i>Busqueda por estación</i>, se seleccionará el
             nombre de la lista desplegada y se hará click en el icono de lupa que se encuentra en la parte 
             inferior. A continuaciòn se muestran el resultado.</p>
-          <a class="reference internal image-reference" href="_images/rio_busqueda.png"><center><img alt="_images/busqueda_rio.png" class="align-center" src="{% static 'historical_validation_tool_colombia/images/imgs/rio_busqueda.png' %}" style="width: 500px;" /></center></a>
+          <a class="reference internal image-reference" href="_images/rio_busqueda.png"><center><img alt="_images/busqueda_rio.png" class="align-center" src="{% static 'historical_validation_tool_colombia/images/manual/rio_busqueda.png' %}" style="width: 500px;" /></center></a>
       </li>
     </ol>
 
@@ -141,7 +137,7 @@
           histórica corregida. Este gráfico muestra la mejora entre el hidrograma de datos históricos simulados (rojo) y el
           hidrograma de datos con corrección de sesgo (verde). El usuario puede activar y desactivar cada una de las opciones
           del hidrograma, como se muestra en la siguiente imagen:</p>
-        <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/hydrographobserveddata.png' %}" style="width: 700px;" /> </center></p>
+        <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/hydrographobserveddata.png' %}" style="width: 700px;" /> </center></p>
         <p>Para descargar la imagen, puede hacerlo en los botones de la derecha en el ícono de cámara. Adicional, en la
           misma ubicación puede realizar zoom al gráfico y restaurar los ejes como la serie de tiempo en caso
           de realizar zoom a los datos del gráfico</p>
@@ -153,7 +149,7 @@
           diagrama de dispersión, diagrama de dispersión usando escala logarítmica, diagrama de análisis de volumen (simulación 
           histórica de 40 años combinada con el volumen total que pasó por la estación, el cual fue calculado utilizando el 
           caudal diario) y tabla de análisis de volumen un determinado lugar.</p>
-        <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/visualanalysis.png' %}" style="width: 600px;" /> </center></p>
+        <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/visualanalysis.png' %}" style="width: 600px;" /> </center></p>
       </li>
 
       <li>
@@ -163,7 +159,7 @@
           HydroStats. La interfaz proporciona métricas de error que pueden cuantificar la comparación y la evaluación de la
           mejora entre la simulación histórica corregida por sesgo y la simulación histórica original de acuerdo con las
           diversas métricas de error.</p>
-        <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/metricsreport.png' %}" style="width: 600px;" /> </center></p>
+        <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/metricsreport.png' %}" style="width: 600px;" /> </center></p>
       </li>
 
       <li>
@@ -173,7 +169,7 @@
           los períodos de retorno calculados a partir de la simulación histórica. El gráfico de pronóstico inferior muestra el
           pronóstico corregido sesgado, con umbrales de períodos de retorno calculados a partir de la simulación histórica
           corregida por sesgo.
-        <p><center><img src="{% static 'historical_validation_tool_colombia/images/imgs/forecast.png' %}" style="width: 600px;" /> </center></p>
+        <p><center><img src="{% static 'historical_validation_tool_colombia/images/manual/forecast.png' %}" style="width: 600px;" /> </center></p>
         <p>Los dos gráficos de pronósticos provienen de 51 simulaciones diferentes y uno de alta resolución, muestran los percentiles
           de caudal 25 y 75, caudales máximo y mínimo y un pronóstico de alta resolución. La leyenda desplegada en la derecha
           muestra las diferentes capas se pueden activar y desactivar de los periodos de retorno calculados para la simulación
