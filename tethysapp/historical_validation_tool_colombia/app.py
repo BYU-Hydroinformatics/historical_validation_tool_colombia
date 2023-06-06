@@ -17,25 +17,3 @@ class HistoricalValidationToolColombia(TethysAppBase):
     tags = '"Geoglows", "Colombia", "Historical data", "Flood forecast"'
     enable_feedback = False
     feedback_emails = []
-
-    def custom_settings(self):
-        return (
-            CustomSetting(
-                name='database_name',
-                type=CustomSetting.TYPE_STRING,
-                description='Postgress - Database name',
-                required=True,
-            ),
-            CustomSetting(
-                name='username',
-                type=CustomSetting.TYPE_STRING,
-                description='Postgress - Username',
-                required=True,
-            ),
-            CustomSetting(
-                name='password',
-                type=CustomSetting.TYPE_STRING,
-                description='Postgress - Password',
-                required=True,
-            ),
-        )

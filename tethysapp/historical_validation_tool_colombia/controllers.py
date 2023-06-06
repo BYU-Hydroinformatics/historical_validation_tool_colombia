@@ -28,17 +28,18 @@ import datetime as dt
 # Base
 import os
 from dotenv import load_dotenv
-from .app import HistoricalValidationToolColombia as app
 
 ####################################################################################################
 ##                                       STATUS VARIABLES                                         ##
 ####################################################################################################
 
-# Import enviromental variables 
+
+# Import enviromental variables
 load_dotenv()
-DB_USER = app.get_custom_setting('username') # postgres
-DB_PASS = app.get_custom_setting('password') # pass
-DB_NAME = app.get_custom_setting('database_name') # gess_streamflow_co
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_NAME = os.getenv('DB_NAME')
+
 
 # Generate the conection token
 global tokencon
