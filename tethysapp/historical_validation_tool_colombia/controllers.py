@@ -24,6 +24,7 @@ import hydrostats.data as hd
 import HydroErr as he
 import plotly.graph_objs as go
 import datetime as dt
+import requests
 
 # Base
 import os
@@ -125,7 +126,6 @@ def get_ensemble_stats(ensemble):
     return(stats_df)
 
 
-
 def get_corrected_forecast(simulated_df, ensemble_df, observed_df):
     monthly_simulated = simulated_df[simulated_df.index.month == (ensemble_df.index[0]).month].dropna()
     monthly_observed = observed_df[observed_df.index.month == (ensemble_df.index[0]).month].dropna()
@@ -155,7 +155,6 @@ def get_corrected_forecast(simulated_df, ensemble_df, observed_df):
     corrected_ensembles = corrected_ensembles.multiply(min_factor_df, axis=0)
     corrected_ensembles = corrected_ensembles.multiply(max_factor_df, axis=0)
     return(corrected_ensembles)
-
 
 
 def get_corrected_forecast_records(records_df, simulated_df, observed_df):
@@ -238,6 +237,53 @@ def get_forecast_record_date(comid, date):
     return(outdf)
 
 
+def get_fews_data(station_code):
+    # TODO : Change with fews postgres implementation
+    url = 'http://fews.ideam.gov.co/colombia/jsonQ/00' + station_code + 'Qobs.json'
+    try:
+        # Call data
+        f = requests.get(url, verify=False)
+        data = f.json()
+        
+        # Extract data
+        observedDischarge = (data.get('obs'))
+        sensorDischarge = (data.get('sen'))
+        observedDischarge = (observedDischarge.get('data'))
+        sensorDischarge = (sensorDischarge.get('data'))
+        datesObservedDischarge = [row[0] for row in observedDischarge]
+        observedDischarge = [row[1] for row in observedDischarge]
+        datesSensorDischarge = [row[0] for row in sensorDischarge]
+        sensorDischarge = [row[1] for row in sensorDischarge]
+
+        # Build dataframe discharge
+        observedDischarge_df = pd.DataFrame(data={'date' : datesObservedDischarge,
+                                                'streamflow m3/s' : observedDischarge})
+        observedDischarge_df['date'] = pd.to_datetime(observedDischarge_df['date'], format='%Y/%m/%d %H:%M')
+        observedDischarge_df['streamflow m3/s'] = observedDischarge_df['streamflow m3/s'].astype(float)
+        observedDischarge_df.dropna(inplace=True)
+        observedDischarge_df.set_index('date', inplace = True)
+        
+        # Build dataframe sensor
+        sensorDischarge_df   = pd.DataFrame(data={'date' : datesSensorDischarge,
+                                                'streamflow m3/s' : sensorDischarge})
+        sensorDischarge_df['date'] = pd.to_datetime(sensorDischarge_df['date'], format='%Y/%m/%d %H:%M')
+        sensorDischarge_df['streamflow m3/s'] = sensorDischarge_df['streamflow m3/s'].astype(float)
+        sensorDischarge_df.dropna(inplace=True)
+        sensorDischarge_df.set_index('date', inplace=True)
+
+    except:
+        # Build discharge dataframe
+        observedDischarge_df = pd.DataFrame(data = {'date' : [pd.NaT],
+                                                  'streamflow m3/s' : [np.nan]})
+        observedDischarge_df.set_index('date', inplace = True)
+
+        # Build sensor dataframe
+        sensorDischarge_df = pd.DataFrame(data = {'date' : [pd.NaT],
+                                                  'streamflow m3/s' : [np.nan]})
+        sensorDischarge_df.set_index('date', inplace=True)
+
+    return observedDischarge_df, sensorDischarge_df
+
 
 ####################################################################################################
 ##                                      PLOTTING FUNCTIONS                                        ##
@@ -263,7 +309,6 @@ def get_daily_average_plot(merged_sim, merged_cor, code, name):
     return(chart_obj)
 
 
-
 # Plotting monthly averages values
 def get_monthly_average_plot(merged_sim, merged_cor, code, name):
     # Generate the average values
@@ -282,7 +327,6 @@ def get_monthly_average_plot(merged_sim, merged_cor, code, name):
     # Generate the output
     chart_obj = go.Figure(data=[daily_avg_obs_Q, daily_avg_sim_Q, daily_avg_corr_sim_Q], layout=layout)
     return(chart_obj)
-
 
 
 # Scatter plot (Simulated/Corrected vs Observed)
@@ -371,17 +415,22 @@ def get_metrics_table(merged_sim, merged_cor, my_metrics):
 
 
 # Forecast plot
-def get_forecast_plot(comid, site, stats, rperiods, records):
+def get_forecast_plot(comid, site, stats, rperiods, records, obs_data):
+
     corrected_stats_df = stats
     corrected_rperiods_df = rperiods
     fixed_records = records
-    ##
+    
+    ## Build image
     hydroviewer_figure = geoglows.plots.forecast_stats(stats=corrected_stats_df, titles={'Site': site, 'Reach ID': comid, 'bias_corrected': True})
-    x_vals = (corrected_stats_df.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[0])
+    x_vals = (corrected_stats_df.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1],
+              corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[0])
     max_visible = max(corrected_stats_df.max())
-    ##
+    
+    ## Bias correction
     corrected_records_plot = fixed_records.loc[fixed_records.index >= pd.to_datetime(corrected_stats_df.index[0] - dt.timedelta(days=8))]
     corrected_records_plot = corrected_records_plot.loc[corrected_records_plot.index <= pd.to_datetime(corrected_stats_df.index[0] + dt.timedelta(days=2))]
+    
     ##
     if len(corrected_records_plot.index) > 0:
       hydroviewer_figure.add_trace(go.Scatter(
@@ -392,8 +441,10 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
       ))
       x_vals = (corrected_records_plot.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_records_plot.index[0])
       max_visible = max(max(corrected_records_plot.max()), max_visible)
+    
     ## Getting Return Periods
     r2 = int(corrected_rperiods_df.iloc[0]['return_period_2'])
+
     ## Colors
     colors = {
         '2 Year': 'rgba(254, 240, 1, .4)',
@@ -404,6 +455,7 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
         '50 Year': 'rgba(128, 0, 106, .4)',
         '100 Year': 'rgba(128, 0, 246, .4)',
     }
+    
     ##
     if max_visible > r2:
       visible = True
@@ -411,6 +463,7 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
     else:
       visible = 'legendonly'
       hydroviewer_figure.for_each_trace(lambda trace: trace.update(visible=True) if trace.name == "Maximum & Minimum Flow" else (), )
+    
     ##
     def template(name, y, color, fill='toself'):
       return go.Scatter(
@@ -421,13 +474,15 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
           fill=fill,
           visible=visible,
           line=dict(color=color, width=0))
-    ##
+    
+    ## Get return periods
     r5 = int(corrected_rperiods_df.iloc[0]['return_period_5'])
     r10 = int(corrected_rperiods_df.iloc[0]['return_period_10'])
     r25 = int(corrected_rperiods_df.iloc[0]['return_period_25'])
     r50 = int(corrected_rperiods_df.iloc[0]['return_period_50'])
     r100 = int(corrected_rperiods_df.iloc[0]['return_period_100'])
-    ##
+
+    ## Return periods plot
     hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
     hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
     hydroviewer_figure.add_trace(template(f'5 Year: {r5}', (r5, r5, r10, r10), colors['5 Year']))
@@ -435,11 +490,23 @@ def get_forecast_plot(comid, site, stats, rperiods, records):
     hydroviewer_figure.add_trace(template(f'25 Year: {r25}', (r25, r25, r50, r50), colors['25 Year']))
     hydroviewer_figure.add_trace(template(f'50 Year: {r50}', (r50, r50, r100, r100), colors['50 Year']))
     hydroviewer_figure.add_trace(template(f'100 Year: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year']))
+    
+    ## Fix axis in obs data for plot
+    obs_data['fix_data'] = [data_i[data_i.index > corrected_records_plot.index[0]] for data_i in obs_data['data']]
+
+    # Add observed data
+    for num, data in enumerate(obs_data['fix_data']):
+        hydroviewer_figure.add_trace(go.Scatter(
+                                        name = obs_data['name'][num],
+                                        x    = data.index,
+                                        y    = data.iloc[:, 0].values,
+                                        line = dict(color=obs_data['color'][num])
+                                    ))
+
     ##
     hydroviewer_figure['layout']['xaxis'].update(autorange=True)
-    return(hydroviewer_figure)
-
-
+    
+    return hydroviewer_figure
 
 
 ####################################################################################################
@@ -510,11 +577,9 @@ def get_data(request):
     conn = db.connect()
 
     # Data series
-    # observed_data = get_format_data("select datetime, {0} from streamflow_data order by datetime;".format(station_code), conn)
-    # simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
-
     observed_data = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
     simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+
     corrected_data = get_bias_corrected_data(simulated_data, observed_data)
 
     # Raw forecast
@@ -527,6 +592,9 @@ def get_data(request):
     corrected_forecast_records = get_corrected_forecast_records(forecast_records, simulated_data, observed_data)
     corrected_return_periods = get_return_periods(station_comid, corrected_data)
     
+    # FEWS data
+    obs_fews, sen_fews = get_fews_data(station_code)
+
     # Stats for raw and corrected forecast
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     corrected_ensemble_stats = get_ensemble_stats(corrected_ensemble_forecast)
@@ -597,20 +665,28 @@ def get_data(request):
                                 ensem = corrected_ensemble_forecast, 
                                 rperiods = corrected_return_periods)
 
+
+    # obs_fews, sen_fews
     # Ensemble forecast plot
     ensemble_forecast_plot = get_forecast_plot(
                                 comid = station_comid, 
                                 site = station_name, 
                                 stats = ensemble_stats, 
                                 rperiods = return_periods, 
-                                records = forecast_records)
+                                records = forecast_records,
+                                obs_data = {'data'  : [obs_fews, sen_fews],
+                                            'color' : ['blue', 'red'],
+                                            'name'  : ['Caudal observado', 'Caudal sensor']})
     
     corrected_ensemble_forecast_plot = get_forecast_plot(
                                             comid = station_comid, 
                                             site = station_name, 
                                             stats = corrected_ensemble_stats, 
                                             rperiods = corrected_return_periods, 
-                                            records = corrected_forecast_records)
+                                            records = corrected_forecast_records,
+                                            obs_data = {'data'  : [obs_fews, sen_fews],
+                                                        'color' : ['blue', 'orange'],
+                                                        'name'  : ['Caudal observado', 'Caudal sensor']})
     
     #returning
     context = {
@@ -665,8 +741,8 @@ def get_raw_forecast_date(request):
     conn = db.connect()
 
     # Data series
-    observed_data = get_format_data("select datetime, {0} from streamflow_data order by datetime;".format(station_code), conn)
-    simulated_data = get_format_data("select * from r_{0};".format(station_comid), conn)
+    observed_data = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
+    simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
     corrected_data = get_bias_corrected_data(simulated_data, observed_data)
 
     # Raw forecast
@@ -682,9 +758,12 @@ def get_raw_forecast_date(request):
     # Forecast stats
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     corrected_ensemble_stats = get_ensemble_stats(corrected_ensemble_forecast)
-
+    
     # Close conection
     conn.close()
+
+    # FEWS data
+    obs_fews, sen_fews = get_fews_data(station_code)
     
     # Plotting raw forecast
     ensemble_forecast_plot = get_forecast_plot(
@@ -692,7 +771,10 @@ def get_raw_forecast_date(request):
                                 site = station_name, 
                                 stats = ensemble_stats, 
                                 rperiods = return_periods, 
-                                records = forecast_records).update_layout(width = plot_width).to_html()
+                                records = forecast_records,
+                                obs_data = {'data'  : [obs_fews, sen_fews],
+                                            'color' : ['blue', 'orange'],
+                                            'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
     
     # Forecast table
     forecast_table = geoglows.plots.probabilities_table(
@@ -707,7 +789,10 @@ def get_raw_forecast_date(request):
                                     site = station_name, 
                                     stats = corrected_ensemble_stats, 
                                     rperiods = corrected_return_periods, 
-                                    records = corrected_forecast_records).update_layout(width = plot_width).to_html()
+                                    records = corrected_forecast_records,
+                                    obs_data = {'data'  : [obs_fews, sen_fews],
+                                                'color' : ['blue', 'orange'],
+                                                'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
     # Corrected forecast table
     corr_forecast_table = geoglows.plots.probabilities_table(
                                     stats = corrected_ensemble_stats,
