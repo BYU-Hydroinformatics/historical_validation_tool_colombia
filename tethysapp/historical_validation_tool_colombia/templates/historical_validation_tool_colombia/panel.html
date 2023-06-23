@@ -68,6 +68,17 @@
         <div class="tab-pane fade show active" id="hydrograph" role="tabpanel" aria-labelledby="hydrograph-tab">
             <div class="container-fluid">
                 {% gizmo corrected_data_plot %}
+
+                <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-observed-data-xlsx')">
+                    <i class="fa-solid fa-download"></i> Descargar Observados históricos
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-simulated-data-xlsx')">
+                    <i class="fa-solid fa-download"></i> Descargar Simulación histórica
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-corrected-data-xlsx')">
+                    <i class="fa-solid fa-download"></i> Descargar Simulación histórica corregida
+                </button>
+
             </div>
         </div>
         <div class="tab-pane fade" id="visual-analisis" role="tabpanel" aria-labelledby="visual-analisis-tab">
@@ -161,6 +172,12 @@
                     <div class="container-fluid" id="forecast-table">
                         {{ forecast_table|safe }}
                     </div>
+
+                    <br>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-forecast-xlsx')">
+                        <i class="fa-solid fa-download"></i> Descargar Pronóstico
+                    </button>
+
                 </div>
                 <br>
             {% endblock %}
@@ -180,10 +197,17 @@
                 <div class="container-fluid" id="corrected-forecast-table">
                     {{ corrected_forecast_table|safe }}
                 </div>
+
+                <br>
+                <button type="button" class="btn btn-sm btn-primary" onclick="descargarArchivo('get-corrected-forecast-xlsx')">
+                    <i class="fa-solid fa-download"></i> Descargar Pronóstico corregido
+                </button>
+
             </div>
             <br>
         </div>
     </div>
+
     <script>
         datepicker_raw = flatpickr("#datepicker_raw", {
             minDate: new Date().fp_incr(-45),
@@ -264,6 +288,14 @@
                 $("#corrected-forecast-table").html(response.corr_forecast_table);
             })    
         })
+
+        function descargarArchivo(api_name){
+            forecast_date = $("#datepicker_cor").val();
+            url = `${server}/apps/historical-validation-tool-colombia/${api_name}/?fecha=${forecast_date}&codigo=${active_code}&comid=${active_comid}`;
+            window.location.href = url;
+        }
+
+
     </script>
 
 

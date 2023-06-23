@@ -16,15 +16,17 @@ from sqlalchemy import create_engine
 from pandas_geojson import to_geojson
 
 # Geoglows
-import geoglows
-import numpy as np
+import io
 import math
+import geoglows
+import requests
+import numpy as np
+import HydroErr as he
+import datetime as dt
 import hydrostats as hs
 import hydrostats.data as hd
-import HydroErr as he
 import plotly.graph_objs as go
-import datetime as dt
-import requests
+
 
 # Base
 import os
@@ -126,35 +128,47 @@ def get_ensemble_stats(ensemble):
     return(stats_df)
 
 
-def get_corrected_forecast(simulated_df, ensemble_df, observed_df):
-    monthly_simulated = simulated_df[simulated_df.index.month == (ensemble_df.index[0]).month].dropna()
-    monthly_observed = observed_df[observed_df.index.month == (ensemble_df.index[0]).month].dropna()
-    min_simulated = np.min(monthly_simulated.iloc[:, 0].to_list())
-    max_simulated = np.max(monthly_simulated.iloc[:, 0].to_list())
-    min_factor_df = ensemble_df.copy()
-    max_factor_df = ensemble_df.copy()
-    forecast_ens_df = ensemble_df.copy()
-    for column in ensemble_df.columns:
-      tmp = ensemble_df[column].dropna().to_frame()
-      min_factor = tmp.copy()
-      max_factor = tmp.copy()
-      min_factor.loc[min_factor[column] >= min_simulated, column] = 1
-      min_index_value = min_factor[min_factor[column] != 1].index.tolist()
-      for element in min_index_value:
-        min_factor[column].loc[min_factor.index == element] = tmp[column].loc[tmp.index == element] / min_simulated
-      max_factor.loc[max_factor[column] <= max_simulated, column] = 1
-      max_index_value = max_factor[max_factor[column] != 1].index.tolist()
-      for element in max_index_value:
-        max_factor[column].loc[max_factor.index == element] = tmp[column].loc[tmp.index == element] / max_simulated
-      tmp.loc[tmp[column] <= min_simulated, column] = min_simulated
-      tmp.loc[tmp[column] >= max_simulated, column] = max_simulated
-      forecast_ens_df.update(pd.DataFrame(tmp[column].values, index=tmp.index, columns=[column]))
-      min_factor_df.update(pd.DataFrame(min_factor[column].values, index=min_factor.index, columns=[column]))
-      max_factor_df.update(pd.DataFrame(max_factor[column].values, index=max_factor.index, columns=[column]))
-    corrected_ensembles = geoglows.bias.correct_forecast(forecast_ens_df, simulated_df, observed_df)
+def __bias_correction_forecast__(sim_hist, fore_nofix, obs_hist):
+    '''Correct Bias Forecasts'''
+
+    # Selection of monthly simulated data
+    monthly_simulated = sim_hist[sim_hist.index.month == (fore_nofix.index[0]).month].dropna()
+
+    # Obtain Min and max value
+    min_simulated = monthly_simulated.min().values[0]
+    max_simulated = monthly_simulated.max().values[0]
+
+    min_factor_df   = fore_nofix.copy()
+    max_factor_df   = fore_nofix.copy()
+    forecast_ens_df = fore_nofix.copy()
+
+    for column in fore_nofix.columns:
+        # Min Factor
+        tmp_array = np.ones(fore_nofix[column].shape[0])
+        tmp_array[fore_nofix[column] < min_simulated] = 0
+        min_factor = np.where(tmp_array == 0, fore_nofix[column] / min_simulated, tmp_array)
+
+        # Max factor
+        tmp_array = np.ones(fore_nofix[column].shape[0])
+        tmp_array[fore_nofix[column] > max_simulated] = 0
+        max_factor = np.where(tmp_array == 0, fore_nofix[column] / max_simulated, tmp_array)
+
+        # Replace
+        tmp_fore_nofix = fore_nofix[column].copy()
+        tmp_fore_nofix.mask(tmp_fore_nofix <= min_simulated, min_simulated, inplace=True)
+        tmp_fore_nofix.mask(tmp_fore_nofix >= max_simulated, max_simulated, inplace=True)
+
+        # Save data
+        forecast_ens_df.update(pd.DataFrame(tmp_fore_nofix, index=fore_nofix.index, columns=[column]))
+        min_factor_df.update(pd.DataFrame(min_factor, index=fore_nofix.index, columns=[column]))
+        max_factor_df.update(pd.DataFrame(max_factor, index=fore_nofix.index, columns=[column]))
+
+    # Get  Bias Correction
+    corrected_ensembles = geoglows.bias.correct_forecast(forecast_ens_df, sim_hist, obs_hist)
     corrected_ensembles = corrected_ensembles.multiply(min_factor_df, axis=0)
     corrected_ensembles = corrected_ensembles.multiply(max_factor_df, axis=0)
-    return(corrected_ensembles)
+
+    return corrected_ensembles
 
 
 def get_corrected_forecast_records(records_df, simulated_df, observed_df):
@@ -521,7 +535,8 @@ def home(request):
 
 
 # Return streamflow stations in geojson format 
-@controller(name='get_stations',url='historical-validation-tool-colombia/get-stations')
+@controller(name='get_stations',
+            url='historical-validation-tool-colombia/get-stations')
 def get_stations(request):
     # Establish connection to database
     db= create_engine(tokencon)
@@ -542,8 +557,8 @@ def get_stations(request):
                              "comid" : "comid",
                              "stream_nam" : "river", 
                              "area_operativa" : "loc1",
-                             "area_hidrografica" : "loc2", 
-                             "departamento" : "loc3", 
+                             "area_hidrografica" : "loc2",
+                             "departamento" : "loc3",
                              "alert" : "alert", 
                              }, inplace=True)
     stations = stations.astype({col : 'str' for col in stations.columns})
@@ -562,7 +577,8 @@ def get_stations(request):
 
 
 # Return streamflow station (in geojson format) 
-@controller(name='get_data',url='historical-validation-tool-colombia/get-data')
+@controller(name='get_data',
+            url='historical-validation-tool-colombia/get-data')
 def get_data(request):
     
     # Retrieving GET arguments
@@ -572,23 +588,28 @@ def get_data(request):
     plot_width = float(request.GET['width']) - 12
     plot_width_2 = 0.5*plot_width
 
+
     # Establish connection to database
-    db= create_engine(tokencon)
+    db = create_engine(tokencon)
     conn = db.connect()
+    try:
+        # Data series
+        observed_data = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
+        simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+        corrected_data = get_bias_corrected_data(simulated_data, observed_data)
 
-    # Data series
-    observed_data = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
-    simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+        # Raw forecast
+        ensemble_forecast = get_format_data("select * from f_{0};".format(station_comid), conn)
+        forecast_records = get_format_data("select * from fr_{0};".format(station_comid), conn)
+    finally:
+        # Close conection
+        conn.close()
 
-    corrected_data = get_bias_corrected_data(simulated_data, observed_data)
-
-    # Raw forecast
-    ensemble_forecast = get_format_data("select * from f_{0};".format(station_comid), conn)
-    forecast_records = get_format_data("select * from fr_{0};".format(station_comid), conn)
     return_periods = get_return_periods(station_comid, simulated_data)
 
     # Corrected forecast
-    corrected_ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    # corrected_ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    corrected_ensemble_forecast = __bias_correction_forecast__(simulated_data, ensemble_forecast, observed_data)
     corrected_forecast_records = get_corrected_forecast_records(forecast_records, simulated_data, observed_data)
     corrected_return_periods = get_return_periods(station_comid, corrected_data)
     
@@ -599,14 +620,13 @@ def get_data(request):
     ensemble_stats = get_ensemble_stats(ensemble_forecast)
     corrected_ensemble_stats = get_ensemble_stats(corrected_ensemble_forecast)
 
+
     # Merge data (For plots)
     global merged_sim
     merged_sim = hd.merge_data(sim_df = simulated_data, obs_df = observed_data)
     global merged_cor
     merged_cor = hd.merge_data(sim_df = corrected_data, obs_df = observed_data)
 
-    # Close conection
-    conn.close()
 
     # Historical data plot
     corrected_data_plot = geoglows.plots.corrected_historical(
@@ -685,9 +705,10 @@ def get_data(request):
                                             rperiods = corrected_return_periods, 
                                             records = corrected_forecast_records,
                                             obs_data = {'data'  : [obs_fews, sen_fews],
-                                                        'color' : ['blue', 'orange'],
+                                                        'color' : ['blue', 'red'],
                                                         'name'  : ['Caudal observado', 'Caudal sensor']})
     
+
     #returning
     context = {
         "corrected_data_plot": PlotlyView(corrected_data_plot.update_layout(width = plot_width)),
@@ -751,7 +772,8 @@ def get_raw_forecast_date(request):
     return_periods = get_return_periods(station_comid, simulated_data)
 
     # Corrected forecast
-    corrected_ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    # corrected_ensemble_forecast = get_corrected_forecast(simulated_data, ensemble_forecast, observed_data)
+    corrected_ensemble_forecast = __bias_correction_forecast__(simulated_data, ensemble_forecast, observed_data)
     corrected_forecast_records = get_corrected_forecast_records(forecast_records, simulated_data, observed_data)
     corrected_return_periods = get_return_periods(station_comid, corrected_data)
     
@@ -773,7 +795,7 @@ def get_raw_forecast_date(request):
                                 rperiods = return_periods, 
                                 records = forecast_records,
                                 obs_data = {'data'  : [obs_fews, sen_fews],
-                                            'color' : ['blue', 'orange'],
+                                            'color' : ['blue', 'red'],
                                             'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
     
     # Forecast table
@@ -791,7 +813,7 @@ def get_raw_forecast_date(request):
                                     rperiods = corrected_return_periods, 
                                     records = corrected_forecast_records,
                                     obs_data = {'data'  : [obs_fews, sen_fews],
-                                                'color' : ['blue', 'orange'],
+                                                'color' : ['blue', 'red'],
                                                 'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
     # Corrected forecast table
     corr_forecast_table = geoglows.plots.probabilities_table(
@@ -805,7 +827,186 @@ def get_raw_forecast_date(request):
        'corr_ensemble_forecast_plot': corr_ensemble_forecast_plot,
        'corr_forecast_table': corr_forecast_table
     })
+############################################################
+
+# Retrieve observed data
+@controller(name='get_observed_data_xlsx',
+            url='historical-validation-tool-colombia/get-observed-data-xlsx')
+def get_observed_data_xlsx(request):
     
+    # Retrieving GET arguments
+    station_code = request.GET['codigo']
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+    
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    
+    try:
+    # Data series
+        data = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
+        data.rename(columns={'s_{0}'.format(station_code): "Historical observation (m3/s)"}, inplace=True)
+    finally:
+       conn.close()
+    
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, sheet_name='serie_observada_simulada', index=True)
+    writer.save()
+    output.seek(0)
+
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=serie_historica_observada.xlsx'
+    response.write(output.getvalue())
+    return response
+
+
+# Retrieve simualted data
+@controller(name='get_simulated_data_xlsx',
+            url='historical-validation-tool-colombia/get-simulated-data-xlsx')
+def get_simulated_data_xlsx(request):
+
+    # Retrieving GET arguments
+    station_code = request.GET['codigo']
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+    
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    
+    try:
+    # Data series
+        data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+        data.rename(columns={data.columns[0]: "Historical simulation (m3/s)"}, inplace=True)
+    finally:
+       conn.close()
+    
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, sheet_name='serie_historica_simulada', index=True)
+    writer.save()
+    output.seek(0)
+
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=serie_historica_simulada.xlsx'
+    response.write(output.getvalue())
+    return response
+
+
+# Retrieve simualted corrected data
+@controller(name='get_corrected_data_xlsx',
+            url='historical-validation-tool-colombia/get-corrected-data-xlsx')
+def get_corrected_data_xlsx(request):
+
+    # Retrieving GET arguments
+    station_code = request.GET['codigo']
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+    
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    
+    try:
+        # Data series
+        observed_data  = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
+        simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+    finally:
+       conn.close()
+
+    # Fix data
+    data = get_bias_corrected_data(simulated_data, observed_data)
+    data.rename(columns={"Corrected Simulated Streamflow" : "Corrected Simulated Streamflow (m3/s)"}, 
+                inplace = True)
+    
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    data.to_excel(writer, sheet_name='serie_historica_corregida', index=True)
+    writer.save()
+    output.seek(0)
+
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=serie_historica_corregida.xlsx'
+    response.write(output.getvalue())
+    return response
+
+
+# Retrieve xlsx data
+@controller(name='get_forecast_xlsx',url='historical-validation-tool-colombia/get-forecast-xlsx')
+def get_forecast_xlsx(request):
+
+    # Retrieving GET arguments
+    station_code = request.GET['codigo']
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+
+    # Raw forecast
+    ensemble_forecast = get_forecast_date(station_comid, forecast_date)
+    ensemble_stats = get_ensemble_stats(ensemble_forecast)
+
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    ensemble_stats.to_excel(writer, sheet_name='ensemble_forecast', index=True)
+    writer.save()
+    output.seek(0)
+
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=ensemble_forecast.xlsx'
+    response.write(output.getvalue())
+
+    return response
+
+
+@controller(name='get_corrected_forecast_xlsx',url='historical-validation-tool-colombia/get-corrected-forecast-xlsx')
+def get_corrected_forecast_xlsx(request):
+    # Retrieving GET arguments
+    station_code = request.GET['codigo']
+    station_comid = request.GET['comid']
+    forecast_date = request.GET['fecha']
+
+    # Establish connection to database
+    db= create_engine(tokencon)
+    conn = db.connect()
+    try:
+        # Data series
+        observed_data  = get_format_data("select datetime, s_{0} from observed_streamflow_data order by datetime;".format(station_code), conn)
+        simulated_data = get_format_data("select * from hs_{0};".format(station_comid), conn)
+    finally:
+        conn.close()
+
+    # Raw forecast
+    ensemble_forecast = get_forecast_date(station_comid, forecast_date)
+    
+    # Corrected forecast
+    corrected_ensemble_forecast = __bias_correction_forecast__(simulated_data, ensemble_forecast, observed_data)
+    
+    # Forecast stats
+    corrected_ensemble_stats = get_ensemble_stats(corrected_ensemble_forecast)
+    print(corrected_ensemble_stats.head())
+    
+    # Crear el archivo Excel
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    corrected_ensemble_stats.to_excel(writer, sheet_name='corrected_ensemble_forecast', index=True)
+    writer.save()
+    output.seek(0)
+
+    # Configurar la respuesta HTTP para descargar el archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=corrected_ensemble_forecast.xlsx'
+    response.write(output.getvalue())
+    return response
+
 ############################################################
 @controller(name = "user_manual",
             url  = "historical-validation-tool-colombia/user_manual")
