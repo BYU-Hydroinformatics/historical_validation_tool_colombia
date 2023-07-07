@@ -494,9 +494,11 @@ info.onAdd = function (map) {
                                 <label class="label-control" for="select-station">Estación hidrológica:</label>
                                 <select id="select-station" multiple placeholder="Escriba el código o nombre de la estación."></select>
                                 <br>
+
                                 <label class="label-control" for="select-river">Nombre de río:</label>
                                 <select id="select-river" multiple placeholder="Escriba el nombre del río de interés."></select>
                                 <br>
+                                
                                 <label for="shpFile" class="label-control">Area geográfica:</label>
                                 <input class="form-control" type="file" id="shpFile" accept=".shp">
                                 
