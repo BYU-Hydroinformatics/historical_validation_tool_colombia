@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from tethys_sdk.routing import controller
 from tethys_sdk.gizmos import PlotlyView, DatePicker
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes
 
 # Postgresql
 import psycopg2
@@ -1049,9 +1051,12 @@ def technical_manual(request):
 
 ############################################################
 #                          SERVICES                        #
-############################################################ 
+############################################################
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
 @controller(name='get_image',
-            url='historical-validation-tool-colombia/get-image')
+            url='historical-validation-tool-colombia/get-image',
+            login_required=False)
 def down_load_img(request):
     # Retrieving GET arguments
     station_code  = request.GET['codigo']
