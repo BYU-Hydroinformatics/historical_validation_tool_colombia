@@ -311,14 +311,14 @@ def get_daily_average_plot(merged_sim, merged_cor, code, name):
     daily_avg_sim = hd.daily_average(merged_sim)
     daily_avg_cor = hd.daily_average(merged_cor)
     # Generate the plots on Ploty
-    daily_avg_obs_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 1].values, name = 'Observed', )
-    daily_avg_sim_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 0].values, name = 'Simulated', )
-    daily_avg_corr_sim_Q = go.Scatter(x = daily_avg_cor.index, y = daily_avg_cor.iloc[:, 0].values, name = 'Corrected Simulated', )
+    daily_avg_obs_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 1].values, name = 'Observado', )
+    daily_avg_sim_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 0].values, name = 'Simulado', )
+    daily_avg_corr_sim_Q = go.Scatter(x = daily_avg_cor.index, y = daily_avg_cor.iloc[:, 0].values, name = 'Simulado corregido', )
     # PLot Layout
     layout = go.Layout(
-        title='Daily Average Streamflow for <br> {0} - {1}'.format(code.upper(), name),
-        xaxis=dict(title='Days', ), 
-        yaxis=dict(title='Discharge (m<sup>3</sup>/s)', autorange=True),
+        title='Caudal promedio diario para <br> {0} - {1}'.format(code.upper(), name),
+        xaxis=dict(title='Dias', ), 
+        yaxis=dict(title='Caudal (m<sup>3</sup>/s)', autorange=True),
         showlegend=True)
     # Generate the output
     chart_obj = go.Figure(data=[daily_avg_obs_Q, daily_avg_sim_Q, daily_avg_corr_sim_Q], layout=layout)
@@ -331,14 +331,14 @@ def get_monthly_average_plot(merged_sim, merged_cor, code, name):
     daily_avg_sim = hd.monthly_average(merged_sim)
     daily_avg_cor = hd.monthly_average(merged_cor)
     # Generate the plots on Ploty
-    daily_avg_obs_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 1].values, name = 'Observed', )
-    daily_avg_sim_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 0].values, name = 'Simulated', )
-    daily_avg_corr_sim_Q = go.Scatter(x = daily_avg_cor.index, y = daily_avg_cor.iloc[:, 0].values, name = 'Corrected Simulated', )
+    daily_avg_obs_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 1].values, name = 'Observado', )
+    daily_avg_sim_Q = go.Scatter(x = daily_avg_sim.index, y = daily_avg_sim.iloc[:, 0].values, name = 'Simulado', )
+    daily_avg_corr_sim_Q = go.Scatter(x = daily_avg_cor.index, y = daily_avg_cor.iloc[:, 0].values, name = 'Simulado corregido', )
     # PLot Layout
     layout = go.Layout(
-        title='Monthly Average Streamflow for <br> {0} - {1}'.format(code.upper(), name),
-        xaxis=dict(title='Months', ), 
-        yaxis=dict(title='Discharge (m<sup>3</sup>/s)', autorange=True),
+        title='Caudal promedio mensual para <br> {0} - {1}'.format(code.upper(), name),
+        xaxis=dict(title='Mes', ), 
+        yaxis=dict(title='Caudal (m<sup>3</sup>/s)', autorange=True),
         showlegend=True)
     # Generate the output
     chart_obj = go.Figure(data=[daily_avg_obs_Q, daily_avg_sim_Q, daily_avg_corr_sim_Q], layout=layout)
@@ -369,18 +369,18 @@ def get_scatter_plot(merged_sim, merged_cor, code, name, log):
         x = [min_value, max_value],
         y = [min_value, max_value],
         mode = 'lines',
-        name = '45deg line',
+        name = 'Línea de 45<sup>o</sup>',
         line = dict(color='black'))
     # Plot Layout
     if log == True:
-        layout = go.Layout(title = "Scatter Plot (Log Scale) <br> {0} - {1}".format(code.upper(), name),
-                       xaxis = dict(title = 'Simulated Discharge (m<sup>3</sup>/s)', type = 'log', ), 
-                       yaxis = dict(title = 'Observed Discharge (m<sup>3</sup>/s)', type = 'log', autorange = True), 
+        layout = go.Layout(title = "Gráfico de dispersión (Escala Log) <br> {0} - {1}".format(code.upper(), name),
+                       xaxis = dict(title = 'Caudal simulado (m<sup>3</sup>/s)', type = 'log', ), 
+                       yaxis = dict(title = 'Caudal observado (m<sup>3</sup>/s)', type = 'log', autorange = True), 
                        showlegend=True)
     else:
-        layout = go.Layout(title = "Scatter Plot <br> {0} - {1}".format(code.upper(), name),
-                       xaxis = dict(title = 'Simulated Discharge (m<sup>3</sup>/s)',  ), 
-                       yaxis = dict(title = 'Observed Discharge (m<sup>3</sup>/s)', autorange = True), 
+        layout = go.Layout(title = "Gráfico de dispersión <br> {0} - {1}".format(code.upper(), name),
+                       xaxis = dict(title = 'Caudal simulado (m<sup>3</sup>/s)',  ), 
+                       yaxis = dict(title = 'Caudal observado (m<sup>3</sup>/s)', autorange = True), 
                        showlegend=True)
     # Plotting data
     chart_obj = go.Figure(data=[scatter_data, scatter_data2, line_45], layout=layout)
@@ -398,14 +398,14 @@ def get_acumulated_volume_plot(merged_sim, merged_cor, code, name):
     obs_volume = obs_array.cumsum()
     cor_volume = cor_array.cumsum()
     # Generate plots
-    observed_volume  = go.Scatter(x = merged_sim.index, y = obs_volume, name='Observed', )
-    simulated_volume = go.Scatter(x = merged_sim.index, y = sim_volume, name='Simulated', )
-    corrected_volume = go.Scatter(x = merged_cor.index, y = cor_volume, name='Corrected Simulated', )
+    observed_volume  = go.Scatter(x = merged_sim.index, y = obs_volume, name='Observado', )
+    simulated_volume = go.Scatter(x = merged_sim.index, y = sim_volume, name='Simulado', )
+    corrected_volume = go.Scatter(x = merged_cor.index, y = cor_volume, name='Simulado corregido', )
     # Plot layouts
     layout = go.Layout(
-                title='Observed & Simulated Volume at<br> {0} - {1}'.format(code.upper(), name),
-                xaxis=dict(title='Dates', ), 
-                yaxis=dict(title='Volume (Mm<sup>3</sup>)', autorange=True),
+                title='Volumen observado y simulado en<br> {0} - {1}'.format(code.upper(), name),
+                xaxis=dict(title='Fechas', ), 
+                yaxis=dict(title='Volumen (Mm<sup>3</sup>)', autorange=True),
                 showlegend=True)
     # Integrating the plots
     chart_obj = go.Figure(data=[observed_volume, simulated_volume, corrected_volume], layout=layout)
@@ -430,15 +430,350 @@ def get_metrics_table(merged_sim, merged_cor, my_metrics):
     return(table_final)
 
 
+
+
+
+# BIAS CORRECTION PLOTS
+def corrected_historical(corrected: pd.DataFrame, simulated: pd.DataFrame, observed: pd.DataFrame,
+                         rperiods: pd.DataFrame = None, titles: dict = None,
+                         outformat: str = 'plotly') -> go.Figure or str:
+    """
+    
+    ###################################################################
+    ADAPTED FOR GEOGLOWS SOURCE CODE
+    ###################################################################
+
+    Creates a plot of corrected discharge, observered discharge, and simulated discharge
+
+    Args:
+        corrected: the response from the geoglows.bias.correct_historical_simulation function\
+        simulated: the csv response from historic_simulation
+        observed: the dataframe of observed data. Must have a datetime index and a single column of flow values
+        rperiods: the csv response from return_periods
+        outformat: either 'plotly', or 'plotly_html' (default plotly)
+        titles: (dict) Extra info to show on the title of the plot. For example:
+            {'Reach ID': 1234567, 'Drainage Area': '1000km^2'}
+
+    Returns:
+         plotly.GraphObject: plotly object, especially for use with python notebooks and the .show() method
+    """
+
+    def _plot_colors():
+        return {
+            '2 Year': 'rgba(254, 240, 1, .4)',
+            '5 Year': 'rgba(253, 154, 1, .4)',
+            '10 Year': 'rgba(255, 56, 5, .4)',
+            '20 Year': 'rgba(128, 0, 246, .4)',
+            '25 Year': 'rgba(255, 0, 0, .4)',
+            '50 Year': 'rgba(128, 0, 106, .4)',
+            '100 Year': 'rgba(128, 0, 246, .4)',
+        }
+
+    def _build_title(base, title_headers):
+        if not title_headers:
+            return base
+        if 'bias_corrected' in title_headers.keys():
+            base = 'Bias Corrected ' + base
+        for head in title_headers:
+            if head == 'bias_corrected':
+                continue
+            base += f'<br>{head}: {title_headers[head]}'
+        return base
+
+    def _rperiod_scatters(startdate: str, enddate: str, rperiods: pd.DataFrame, y_max: float, max_visible: float = 0,
+                      visible: bool = None):
+        colors = _plot_colors()
+        x_vals = (startdate, enddate, enddate, startdate)
+        r2 = rperiods['return_period_2'].values[0]
+        if visible is None:
+            if max_visible > r2:
+                visible = True
+            else:
+                visible = 'legendonly'
+
+        def template(name, y, color, fill='toself'):
+            return go.Scatter(
+                name=name,
+                x=x_vals,
+                y=y,
+                legendgroup='returnperiods',
+                fill=fill,
+                visible=visible,
+                line=dict(color=color, width=0))
+
+        if list(rperiods.columns) == ['max_flow', 'return_period_20', 'return_period_10', 'return_period_2']:
+            r10 = int(rperiods['return_period_10'].values[0])
+            r20 = int(rperiods['return_period_20'].values[0])
+            rmax = int(max(2 * r20 - r10, y_max))
+            return [
+                template(f'2 años: {r2}', (r2, r2, r10, r10), colors['2 Year']),
+                template(f'10 años: {r10}', (r10, r10, r20, r20), colors['10 Year']),
+                template(f'20 años: {r20}', (r20, r20, rmax, rmax), colors['20 Year']),
+            ]
+
+        else:
+            r5 = int(rperiods['return_period_5'].values[0])
+            r10 = int(rperiods['return_period_10'].values[0])
+            r25 = int(rperiods['return_period_25'].values[0])
+            r50 = int(rperiods['return_period_50'].values[0])
+            r100 = int(rperiods['return_period_100'].values[0])
+            rmax = int(max(2 * r100 - r25, y_max))
+            return [
+                template('Return Periods', (rmax, rmax, rmax, rmax), 'rgba(0,0,0,0)', fill='none'),
+                template(f'2 años: {r2}', (r2, r2, r5, r5), colors['2 Year']),
+                template(f'5 años: {r5}', (r5, r5, r10, r10), colors['5 Year']),
+                template(f'10 años: {r10}', (r10, r10, r25, r25), colors['10 Year']),
+                template(f'25 años: {r25}', (r25, r25, r50, r50), colors['25 Year']),
+                template(f'50 años: {r50}', (r50, r50, r100, r100), colors['50 Year']),
+                template(f'100 años: {r100}', (r100, r100, rmax, rmax), colors['100 Year']),
+            ]
+
+
+    # MAIN CODE
+    startdate = corrected.index[0]
+    enddate = corrected.index[-1]
+
+    plot_data = {
+        'x_simulated': corrected.index.tolist(),
+        'x_observed': observed.index.tolist(),
+        'y_corrected': corrected.values.flatten(),
+        'y_simulated': simulated.values.flatten(),
+        'y_observed': observed.values.flatten(),
+        'y_max': max(corrected.values.max(), observed.values.max(), simulated.values.max()),
+    }
+    if rperiods is not None:
+        plot_data.update(rperiods.to_dict(orient='index').items())
+        rperiod_scatters = _rperiod_scatters(startdate, enddate, rperiods, plot_data['y_max'], plot_data['y_max'])
+    else:
+        rperiod_scatters = []
+
+    scatters = [
+        go.Scatter(
+            name='Simulado',
+            x=plot_data['x_simulated'],
+            y=plot_data['y_simulated'],
+            line=dict(color='red')
+        ),
+        go.Scatter(
+            name='Observado',
+            x=plot_data['x_observed'],
+            y=plot_data['y_observed'],
+            line=dict(color='blue')
+        ),
+        go.Scatter(
+            name='Simulado corregido',
+            x=plot_data['x_simulated'],
+            y=plot_data['y_corrected'],
+            line=dict(color='#00cc96')
+        ),
+    ]
+    scatters += rperiod_scatters
+
+    layout = go.Layout(
+        title=_build_title("Comparación de la simulación histórica.", titles),
+        yaxis={'title': 'Caudal (m<sup>3</sup>/s)'},
+        xaxis={'title': 'Fecha (UTC +0:00)', 'range': [startdate, enddate], 'hoverformat': '%b %d %Y',
+               'tickformat': '%Y'},
+    )
+
+    figure = go.Figure(data=scatters, layout=layout)
+    return figure
+
+
+def forecast_stats(stats: pd.DataFrame, rperiods: pd.DataFrame = None, titles: dict = False,
+                   outformat: str = 'plotly', hide_maxmin: bool = False) -> go.Figure:
+    """
+    Makes the streamflow data and optional metadata into a plotly plot
+
+    Args:
+        stats: the csv response from forecast_stats
+        rperiods: the csv response from return_periods
+        titles: (dict) Extra info to show on the title of the plot. For example:
+            {'Reach ID': 1234567, 'Drainage Area': '1000km^2'}
+        outformat: 'json', 'plotly', 'plotly_scatters', or 'plotly_html' (default plotly)
+        hide_maxmin: Choose to hide the max/min envelope by default
+
+    Return:
+         plotly.GraphObject: plotly object, especially for use with python notebooks and the .show() method
+    """
+
+
+    def _plot_colors():
+        return {
+            '2 Year': 'rgba(254, 240, 1, .4)',
+            '5 Year': 'rgba(253, 154, 1, .4)',
+            '10 Year': 'rgba(255, 56, 5, .4)',
+            '20 Year': 'rgba(128, 0, 246, .4)',
+            '25 Year': 'rgba(255, 0, 0, .4)',
+            '50 Year': 'rgba(128, 0, 106, .4)',
+            '100 Year': 'rgba(128, 0, 246, .4)',
+        }
+    
+
+    def _build_title(base, title_headers):
+        if not title_headers:
+            return base
+        if 'bias_corrected' in title_headers.keys():
+            base = 'Correccion del sesgo - ' + base
+        for head in title_headers:
+            if head == 'bias_corrected':
+                continue
+            base += f'<br>{head}: {title_headers[head]}'
+        return base
+
+
+    def _rperiod_scatters(startdate: str, enddate: str, rperiods: pd.DataFrame, y_max: float, max_visible: float = 0,
+                        visible: bool = None):
+        colors = _plot_colors()
+        x_vals = (startdate, enddate, enddate, startdate)
+        r2 = rperiods['return_period_2'].values[0]
+        if visible is None:
+            if max_visible > r2:
+                visible = True
+            else:
+                visible = 'legendonly'
+
+        def template(name, y, color, fill='toself'):
+            return go.Scatter(
+                name=name,
+                x=x_vals,
+                y=y,
+                legendgroup='returnperiods',
+                fill=fill,
+                visible=visible,
+                line=dict(color=color, width=0))
+
+        if list(rperiods.columns) == ['max_flow', 'return_period_20', 'return_period_10', 'return_period_2']:
+            r10 = int(rperiods['return_period_10'].values[0])
+            r20 = int(rperiods['return_period_20'].values[0])
+            rmax = int(max(2 * r20 - r10, y_max))
+            return [
+                template(f'2 años: {r2}', (r2, r2, r10, r10), colors['2 Year']),
+                template(f'10 años: {r10}', (r10, r10, r20, r20), colors['10 Year']),
+                template(f'20 años: {r20}', (r20, r20, rmax, rmax), colors['20 Year']),
+            ]
+
+        else:
+            r5 = int(rperiods['return_period_5'].values[0])
+            r10 = int(rperiods['return_period_10'].values[0])
+            r25 = int(rperiods['return_period_25'].values[0])
+            r50 = int(rperiods['return_period_50'].values[0])
+            r100 = int(rperiods['return_period_100'].values[0])
+            rmax = int(max(2 * r100 - r25, y_max))
+            return [
+                template('Return Periods', (rmax, rmax, rmax, rmax), 'rgba(0,0,0,0)', fill='none'),
+                template(f'2 años: {r2}', (r2, r2, r5, r5), colors['2 Year']),
+                template(f'5 años: {r5}', (r5, r5, r10, r10), colors['5 Year']),
+                template(f'10 años: {r10}', (r10, r10, r25, r25), colors['10 Year']),
+                template(f'25 años: {r25}', (r25, r25, r50, r50), colors['25 Year']),
+                template(f'50 años: {r50}', (r50, r50, r100, r100), colors['50 Year']),
+                template(f'100 años: {r100}', (r100, r100, rmax, rmax), colors['100 Year']),
+            ]
+
+    #############################################################################
+    ################################## MAIN #####################################
+    #############################################################################
+
+    # Start processing the inputs
+    dates = stats.index.tolist()
+    startdate = dates[0]
+    enddate = dates[-1]
+
+    plot_data = {
+        'x_stats': stats['flow_avg_m^3/s'].dropna(axis=0).index.tolist(),
+        'x_hires': stats['high_res_m^3/s'].dropna(axis=0).index.tolist(),
+        'y_max': max(stats['flow_max_m^3/s']),
+        'flow_max': list(stats['flow_max_m^3/s'].dropna(axis=0)),
+        'flow_75%': list(stats['flow_75%_m^3/s'].dropna(axis=0)),
+        'flow_avg': list(stats['flow_avg_m^3/s'].dropna(axis=0)),
+        'flow_25%': list(stats['flow_25%_m^3/s'].dropna(axis=0)),
+        'flow_min': list(stats['flow_min_m^3/s'].dropna(axis=0)),
+        'high_res': list(stats['high_res_m^3/s'].dropna(axis=0)),
+    }
+    if rperiods is not None:
+        plot_data.update(rperiods.to_dict(orient='index').items())
+        max_visible = max(max(plot_data['flow_75%']), max(plot_data['flow_avg']), max(plot_data['high_res']))
+        rperiod_scatters = _rperiod_scatters(startdate, enddate, rperiods, plot_data['y_max'], max_visible)
+    else:
+        rperiod_scatters = []
+
+    maxmin_visible = 'legendonly' if hide_maxmin else True
+    scatter_plots = [
+        # Plot together so you can use fill='toself' for the shaded box, also separately so the labels appear
+        go.Scatter(name='Caudal máximo y mínimo',
+                   x=plot_data['x_stats'] + plot_data['x_stats'][::-1],
+                   y=plot_data['flow_max'] + plot_data['flow_min'][::-1],
+                   legendgroup='boundaries',
+                   fill='toself',
+                   visible=maxmin_visible,
+                   line=dict(color='lightblue', dash='dash')),
+        go.Scatter(name='Máximo',
+                   x=plot_data['x_stats'],
+                   y=plot_data['flow_max'],
+                   legendgroup='boundaries',
+                   visible=maxmin_visible,
+                   showlegend=False,
+                   line=dict(color='darkblue', dash='dash')),
+        go.Scatter(name='Mínimo',
+                   x=plot_data['x_stats'],
+                   y=plot_data['flow_min'],
+                   legendgroup='boundaries',
+                   visible=maxmin_visible,
+                   showlegend=False,
+                   line=dict(color='darkblue', dash='dash')),
+
+        go.Scatter(name='Percventil 25 - 75 de caudal',
+                   x=plot_data['x_stats'] + plot_data['x_stats'][::-1],
+                   y=plot_data['flow_75%'] + plot_data['flow_25%'][::-1],
+                   legendgroup='percentile_flow',
+                   fill='toself',
+                   line=dict(color='lightgreen'), ),
+        go.Scatter(name='75%',
+                   x=plot_data['x_stats'],
+                   y=plot_data['flow_75%'],
+                   showlegend=False,
+                   legendgroup='percentile_flow',
+                   line=dict(color='green'), ),
+        go.Scatter(name='25%',
+                   x=plot_data['x_stats'],
+                   y=plot_data['flow_25%'],
+                   showlegend=False,
+                   legendgroup='percentile_flow',
+                   line=dict(color='green'), ),
+
+        go.Scatter(name='Pronóstico de alta resolución',
+                   x=plot_data['x_hires'],
+                   y=plot_data['high_res'],
+                   line={'color': 'black'}, ),
+        go.Scatter(name='Caudal promedio del ensamble',
+                   x=plot_data['x_stats'],
+                   y=plot_data['flow_avg'],
+                   line=dict(color='blue'), ),
+    ]
+
+    scatter_plots += rperiod_scatters
+
+    layout = go.Layout(
+        title=_build_title('Caudal pronosticado', titles),
+        yaxis={'title': 'Caudal (m<sup>3</sup>/s)', 'range': [0, 'auto']},
+        xaxis={'title': 'Fecha (UTC +0:00)', 'range': [startdate, enddate], 'hoverformat': '%b %d %Y',
+               'tickformat': '%b %d %Y'},
+    )
+    figure = go.Figure(scatter_plots, layout=layout)
+
+    return figure
+
+
 # Forecast plot
-def get_forecast_plot(comid, site, stats, rperiods, records, obs_data):
+def get_forecast_plot(comid, site, stats, rperiods, records, obs_data, bias_corr):
 
     corrected_stats_df = stats
     corrected_rperiods_df = rperiods
     fixed_records = records
     
     ## Build image
-    hydroviewer_figure = geoglows.plots.forecast_stats(stats=corrected_stats_df, titles={'Site': site, 'Reach ID': comid, 'bias_corrected': True})
+    # hydroviewer_figure = geoglows.plots.forecast_stats(stats=corrected_stats_df, titles={'Estacion': site, 'COMID': comid, 'bias_corrected': True})
+    hydroviewer_figure = forecast_stats(stats=corrected_stats_df, titles={'Estacion': site, 'COMID': comid, 'bias_corrected': bias_corr})
     x_vals = (corrected_stats_df.index[0], corrected_stats_df.index[len(corrected_stats_df.index) - 1],
               corrected_stats_df.index[len(corrected_stats_df.index) - 1], corrected_stats_df.index[0])
     max_visible = max(corrected_stats_df.max())
@@ -450,7 +785,7 @@ def get_forecast_plot(comid, site, stats, rperiods, records, obs_data):
     ##
     if len(corrected_records_plot.index) > 0:
       hydroviewer_figure.add_trace(go.Scatter(
-          name='1st days forecasts',
+          name='1er día de pronóstico',
           x=corrected_records_plot.index,
           y=corrected_records_plot.iloc[:, 0].values,
           line=dict(color='#FFA15A',)
@@ -499,13 +834,13 @@ def get_forecast_plot(comid, site, stats, rperiods, records, obs_data):
     r100 = int(corrected_rperiods_df.iloc[0]['return_period_100'])
 
     ## Return periods plot
-    hydroviewer_figure.add_trace(template('Return Periods', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
-    hydroviewer_figure.add_trace(template(f'2 Year: {r2}', (r2, r2, r5, r5), colors['2 Year']))
-    hydroviewer_figure.add_trace(template(f'5 Year: {r5}', (r5, r5, r10, r10), colors['5 Year']))
-    hydroviewer_figure.add_trace(template(f'10 Year: {r10}', (r10, r10, r25, r25), colors['10 Year']))
-    hydroviewer_figure.add_trace(template(f'25 Year: {r25}', (r25, r25, r50, r50), colors['25 Year']))
-    hydroviewer_figure.add_trace(template(f'50 Year: {r50}', (r50, r50, r100, r100), colors['50 Year']))
-    hydroviewer_figure.add_trace(template(f'100 Year: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year']))
+    hydroviewer_figure.add_trace(template('Periodos de retorno', (r100 * 0.05, r100 * 0.05, r100 * 0.05, r100 * 0.05), 'rgba(0,0,0,0)', fill='none'))
+    hydroviewer_figure.add_trace(template(f'2 años: {r2}', (r2, r2, r5, r5), colors['2 Year']))
+    hydroviewer_figure.add_trace(template(f'5 años: {r5}', (r5, r5, r10, r10), colors['5 Year']))
+    hydroviewer_figure.add_trace(template(f'10 años: {r10}', (r10, r10, r25, r25), colors['10 Year']))
+    hydroviewer_figure.add_trace(template(f'25 años: {r25}', (r25, r25, r50, r50), colors['25 Year']))
+    hydroviewer_figure.add_trace(template(f'50 años: {r50}', (r50, r50, r100, r100), colors['50 Year']))
+    hydroviewer_figure.add_trace(template(f'100 años: {r100}', (r100, r100, max(r100 + r100 * 0.05, max_visible), max(r100 + r100 * 0.05, max_visible)), colors['100 Year']))
     
     ## Fix axis in obs data for plot
     obs_data['fix_data'] = [data_i[data_i.index > corrected_records_plot.index[0]] for data_i in obs_data['data']]
@@ -516,7 +851,10 @@ def get_forecast_plot(comid, site, stats, rperiods, records, obs_data):
                                         name = obs_data['name'][num],
                                         x    = data.index,
                                         y    = data.iloc[:, 0].values,
-                                        line = dict(color=obs_data['color'][num])
+                                        line = dict(color=obs_data['color'][num]),
+                                        hovertemplate = 'Valor : %{y:.2f}<br>' + 
+                                                        'Fecha : %{x|%Y/%m/%d}<br>' + 
+                                                        'Hora : %{x|%H:%M}'
                                     ))
 
     ##
@@ -633,12 +971,19 @@ def get_data(request):
 
 
     # Historical data plot
+    """
     corrected_data_plot = geoglows.plots.corrected_historical(
                                 simulated = simulated_data,
                                 corrected = corrected_data,
                                 observed = observed_data, 
                                 outformat = "plotly", 
-                                titles = {'Site': station_name, 'Reach COMID': station_comid})
+                                titles = {'Estación': station_name, 'COMID': station_comid})
+    """
+    corrected_data_plot = corrected_historical(
+                                simulated = simulated_data,
+                                corrected = corrected_data,
+                                observed = observed_data, 
+                                titles = {'Estación': station_name, 'COMID': station_comid})
     # Daily averages plot
     daily_average_plot = get_daily_average_plot(
                                 merged_cor = merged_cor,
@@ -700,7 +1045,9 @@ def get_data(request):
                                 records = forecast_records,
                                 obs_data = {'data'  : [obs_fews, sen_fews],
                                             'color' : ['blue', 'red'],
-                                            'name'  : ['Caudal observado', 'Caudal sensor']})
+                                            'name'  : ['Caudal observado', 'Caudal sensor']},
+                                bias_corr = False,
+                                )
     
     corrected_ensemble_forecast_plot = get_forecast_plot(
                                             comid = station_comid, 
@@ -710,7 +1057,9 @@ def get_data(request):
                                             records = corrected_forecast_records,
                                             obs_data = {'data'  : [obs_fews, sen_fews],
                                                         'color' : ['blue', 'red'],
-                                                        'name'  : ['Caudal observado', 'Caudal sensor']})
+                                                        'name'  : ['Caudal observado', 'Caudal sensor']},
+                                            bias_corr = True,            
+                                            )
     
 
     #returning
@@ -802,7 +1151,9 @@ def get_raw_forecast_date(request):
                                 records = forecast_records,
                                 obs_data = {'data'  : [obs_fews, sen_fews],
                                             'color' : ['blue', 'red'],
-                                            'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
+                                            'name'  : ['Caudal observado', 'Caudal sensor']},
+                                bias_corr = False,            
+                                ).update_layout(width = plot_width).to_html()
     
     # Forecast table
     forecast_table = geoglows.plots.probabilities_table(
@@ -820,7 +1171,9 @@ def get_raw_forecast_date(request):
                                     records = corrected_forecast_records,
                                     obs_data = {'data'  : [obs_fews, sen_fews],
                                                 'color' : ['blue', 'red'],
-                                                'name'  : ['Caudal observado', 'Caudal sensor']}).update_layout(width = plot_width).to_html()
+                                                'name'  : ['Caudal observado', 'Caudal sensor']},
+                                    bias_corr = True,            
+                                    ).update_layout(width = plot_width).to_html()
     # Corrected forecast table
     corr_forecast_table = geoglows.plots.probabilities_table(
                                     stats = corrected_ensemble_stats,
@@ -1035,6 +1388,8 @@ def get_corrected_forecast_xlsx(request):
     return response
 
 ############################################################
+#                          MANUALS                         #
+############################################################
 @controller(name = "user_manual",
             url  = "historical-validation-tool-colombia/user_manual")
 def user_manual(request):
@@ -1112,12 +1467,19 @@ def down_load_img(request):
     merged_cor = hd.merge_data(sim_df = corrected_data, obs_df = observed_data)
 
     if 'historical' == type_graph:
+        """
         fig = geoglows.plots.corrected_historical(
                             simulated = simulated_data,
                             corrected = corrected_data,
                             observed = observed_data, 
                             outformat = "plotly", 
-                            titles = {'Site': station_name, 'Reach COMID': station_comid})
+                            titles = {'Estación': station_name, 'COMID': station_comid})
+        """
+        fig = corrected_historical(
+                            simulated = simulated_data,
+                            corrected = corrected_data,
+                            observed = observed_data, 
+                            titles = {'Estación': station_name, 'COMID': station_comid})
         name_file = 'historical'
     elif 'forecast' == type_graph:
         fig = get_forecast_plot(
@@ -1128,7 +1490,8 @@ def down_load_img(request):
                                 records = corrected_forecast_records,
                                 obs_data = {'data'  : [obs_fews, sen_fews],
                                             'color' : ['blue', 'red'],
-                                            'name'  : ['Caudal observado', 'Caudal sensor']})
+                                            'name'  : ['Caudal observado', 'Caudal sensor']},
+                                bias_corr = True)
         name_file = 'corrected_forecast'
     
     # Build image bytes

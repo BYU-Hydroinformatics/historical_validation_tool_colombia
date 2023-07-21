@@ -239,6 +239,7 @@ window.onload = function () {
                     version : '1.1.0',
                     transparent: true,
                     srs     : 'EPSG:4326',
+                    opacity: 0.65,
                     }
                     ).addTo(map);
 
