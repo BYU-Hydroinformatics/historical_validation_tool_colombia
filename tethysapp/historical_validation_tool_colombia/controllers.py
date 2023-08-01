@@ -713,7 +713,7 @@ def forecast_stats(stats: pd.DataFrame, rperiods: pd.DataFrame = None, titles: d
                    legendgroup='boundaries',
                    visible=maxmin_visible,
                    showlegend=False,
-                   line=dict(color='darkblue', dash='dash')),
+                   line=dict(color='darkblue', dash='dash'),),
         go.Scatter(name='Mínimo',
                    x=plot_data['x_stats'],
                    y=plot_data['flow_min'],
@@ -722,7 +722,7 @@ def forecast_stats(stats: pd.DataFrame, rperiods: pd.DataFrame = None, titles: d
                    showlegend=False,
                    line=dict(color='darkblue', dash='dash')),
 
-        go.Scatter(name='Percventil 25 - 75 de caudal',
+        go.Scatter(name='Percentil 25 - 75 de caudal',
                    x=plot_data['x_stats'] + plot_data['x_stats'][::-1],
                    y=plot_data['flow_75%'] + plot_data['flow_25%'][::-1],
                    legendgroup='percentile_flow',
@@ -756,7 +756,7 @@ def forecast_stats(stats: pd.DataFrame, rperiods: pd.DataFrame = None, titles: d
     layout = go.Layout(
         title=_build_title('Caudal pronosticado', titles),
         yaxis={'title': 'Caudal (m<sup>3</sup>/s)', 'range': [0, 'auto']},
-        xaxis={'title': 'Fecha (UTC +0:00)', 'range': [startdate, enddate], 'hoverformat': '%b %d %Y',
+        xaxis={'title': 'Fecha (UTC +0:00)', 'range': [startdate, enddate], 'hoverformat': '%H:%M - %b %d %Y',
                'tickformat': '%b %d %Y'},
     )
     figure = go.Figure(scatter_plots, layout=layout)
