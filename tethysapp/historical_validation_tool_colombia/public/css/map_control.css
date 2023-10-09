@@ -1,17 +1,50 @@
 .control {
-    height: 720px;
-    width: 300px;
+    height: 320px;
+    width: 380px;
     background-color: rgba(32, 41, 92, 0.8);
-    padding: 10px;
+    padding: 0px;
+}
+
+.control button{
+    margin: 0px !important;
+    font-size: 20px !important;
+}
+
+#v-pills-tab {
+    background-color: rgba(32, 41, 92, 1);
+    height: 320px; /* Este debe ser el mismo tamaño de control*/
+}
+
+.control .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: rgba(32, 41, 92, 0.8) !important;
+    background-color: #fff;
+}
+
+.control .nav-link {
+    color: #fff !important;
+}
+
+.control .tab-content{
+    padding: 20px 20px 0px 0px !important;
 }
 
 
+
 .label-control {
-    font-size: 14px !important;
+    font-size: 16px !important;
     color: #fcbf10;
     font-weight: bold;
     padding-bottom: 5px;
     padding-left: 3px;
+}
+
+.control .selectize-input {
+    width: 290px !important;
+    font-size: 15px !important;
+}
+
+.selectize-input input {
+    font-size: 15px !important;
 }
 
 .selectize-dropdown .selected {
@@ -24,7 +57,7 @@
 }
 
 .form-control {
-    font-size: 13px !important;
+    font-size: 15px !important;
 }
 
 .alert-panel-checkbox .form-check-label {
@@ -34,7 +67,7 @@
 .control-group .btn-outline-primary {
     color: #2E74B4 !important;
     border-color: #2E74B4 !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
     width: 47% !important;
 }
 
@@ -42,19 +75,20 @@
     color: #2E74B4 !important;
     background-color:transparent !important;
     border-color: #2E74B4 !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
 }
 
 .control-group .btn-primary {
     background-color:#2E74B4 !important;
     border-color: #2E74B4 !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
     width: 47% !important;
 }
 
 .alert-panel-checkbox {
-    font-size: 13px !important;
+    font-size: 15px !important;
 }
+
 
 
 
@@ -86,3 +120,14 @@
     background-color: #8000F6;
 }
 
+.form-switch #check-lower-1:checked {
+    background-color: #00fdb5;
+}
+
+.form-switch #check-lower-3:checked {
+    background-color: #535252;
+}
+
+.form-switch #check-lower-7:checked {
+    background-color: #000000;
+}

@@ -52,13 +52,17 @@ function IconMarker(rp) {
 }
 
 // Icon markers for each return period
-const IconR000 = IconMarker("0");       // RP: 0 years
+const IconR000 = IconMarker("0");      // RP: 0 years
 const IconR002 = IconMarker("2");      // RP: 2 years
-const IconR005 = IconMarker("5");        // RP: 5 years
-const IconR010 = IconMarker("10");      // RP: 10 years
-const IconR025 = IconMarker("25");         // RP: 25 years
-const IconR050 = IconMarker("50");      // RP: 50 years
-const IconR100 = IconMarker("100");       // RP: 100 years
+const IconR005 = IconMarker("5");      // RP: 5 years
+const IconR010 = IconMarker("10");     // RP: 10 years
+const IconR025 = IconMarker("25");     // RP: 25 years
+const IconR050 = IconMarker("50");     // RP: 50 years
+const IconR100 = IconMarker("100");    // RP: 100 years
+
+const IconL_1 = IconMarker("lower_1");  // Low 7q10 from 1 to 3 days
+const IconL_3 = IconMarker("lower_3");  // Low 7q10 from 3 to 7 days
+const IconL_7 = IconMarker("lower_7");  // Low 7q10 from 7 to plus days
 
 // Customized icon function
 function IconParse(feature, latlng) {
@@ -83,6 +87,16 @@ function IconParse(feature, latlng) {
             break;
         case "R100":
             StationIcon = IconR100;
+            break;
+
+        case "lower_1":
+            StationIcon = IconL_1;
+            break;
+        case "lower_3":
+            StationIcon = IconL_3;
+            break;
+        case "lower_7":
+            StationIcon = IconL_7;
             break;
     }
     return L.marker(latlng, { icon: StationIcon });
@@ -220,18 +234,6 @@ function onEachFeature(feature, layer) {
 window.onload = function () {
   // Load drainage network
 
-  /*
-  fetch(
-    `${server}/static/historical_validation_tool_colombia/geojson/colombia_geoglows_drainage.geojson`
-  )
-    .then((response) => (layer = response.json()))
-    .then((layer) => {
-      riv = L.geoJSON(layer, { style: { weight: 1, color: "#4747C9" } }).addTo(map);
-      map.fitBounds(riv.getBounds());
-    });
-  */
-
-
   var url = 'https://geoserver.hydroshare.org/geoserver/HS-dd069299816c4f1b82cd1fb2d59ec0ab/wms';
   L.tileLayer.wms(url + "?service=WMS&",
                     {layers  : 'HS-dd069299816c4f1b82cd1fb2d59ec0ab:colombia_geoglows_drainage_v1',
@@ -250,7 +252,7 @@ window.onload = function () {
     .then((layer) => {
         est_layer = layer.features.map(item => item.properties);
         
-        // Filter by alert
+        // Filter by high alert
         est_R000 = L.geoJSON(layer.features.filter(item => item.properties.alert === "R0"), {
             pointToLayer: IconParse,
             onEachFeature: onEachFeature,
@@ -292,6 +294,25 @@ window.onload = function () {
             onEachFeature: onEachFeature,
         });
         est_R100.addTo(map);
+
+        // Filter by low alert
+        est_L_1 = L.geoJSON(layer.features.filter(item => item.properties.alert === "lower_1"), {
+            pointToLayer : IconParse,
+            onEachFeature: onEachFeature,
+        });
+        est_L_1.addTo(map);
+
+        est_L_3 = L.geoJSON(layer.features.filter(item => item.properties.alert === "lower_3"), {
+            pointToLayer : IconParse,
+            onEachFeature: onEachFeature,
+        });
+        est_L_3.addTo(map);
+
+        est_L_7 = L.geoJSON(layer.features.filter(item => item.properties.alert === "lower_7"), {
+            pointToLayer : IconParse,
+            onEachFeature: onEachFeature,
+        });
+        est_L_7.addTo(map);
 
     });
 };
