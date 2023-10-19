@@ -1374,7 +1374,7 @@ def get_simulated_data_xlsx(request):
     # Data series
         data = get_format_data("select * from hs_{0};".format(station_comid), conn)
         # TODO : remove whwere geoglows server works
-        simulated_data = simulated_data[simulated_data.index < '2022-06-01'].copy()
+        data = data[data.index < '2022-06-01'].copy()
         data.rename(columns={data.columns[0]: "Historical simulation (m3/s)"}, inplace=True)
     finally:
        conn.close()
