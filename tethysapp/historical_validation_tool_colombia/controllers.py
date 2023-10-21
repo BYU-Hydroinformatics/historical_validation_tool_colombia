@@ -1638,3 +1638,24 @@ def down_load_img(request):
     response.write(img_bytes)
 
     return response
+
+
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+@controller(name='get_warning',
+            url='historical-validation-tool-colombia/get-warnings',
+            login_required=False)
+def down_load_warning_list(request):
+
+    # stations_streamflow
+    # stations_waterlevel
+
+    db= create_engine(tokencon)
+    conn = db.connect()
+    try:
+        df = pd.read_sql("select codigo, name, comid, alert from stations_streamflow order by codigo", conn)
+    finally:
+        # Close conection
+        conn.close()
+    
+    return JsonResponse(df.to_dict(orient='list'))
